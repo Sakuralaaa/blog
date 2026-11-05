@@ -2,6 +2,17 @@
 set -eu
 umask 077
 
+# 0) 以 root 启动时：修正数据目录属主后降权到 nextjs（UID 1001）
+if [ "$(id -u)" = "0" ]; then
+  data="${DATA_DIR:-/data}"
+  mkdir -p "$data" "$data/uploads" "$data/.next-cache"
+  if [ "$(stat -c %u "$data")" != "1001" ] || [ -n "$(find "$data" -maxdepth 2 ! -user 1001 -print -quit 2>/dev/null)" ]; then
+    echo "[entrypoint] 修正 $data 属主为 nextjs"
+    chown -R 1001:1001 "$data"
+  fi
+  exec setpriv --reuid=1001 --regid=1001 --init-groups "$0" "$@"
+fi
+
 DATA_DIR="${DATA_DIR:-/data}"
 
 # 1) 生成/复用 NEXTAUTH_SECRET（写入数据卷，避免每次重启都变化）

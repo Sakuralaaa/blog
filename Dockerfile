@@ -89,6 +89,9 @@ RUN chmod +x /entrypoint.sh \
 USER nextjs
 # Startup scripts run outside Next.js bundles; fail the build if their imports are missing.
 RUN node --input-type=module -e "await Promise.all(['@prisma/client', 'bcryptjs', 'htmlparser2'].map(name => import(name)))"
+# Start as root so the entrypoint can fix ownership of a bind-mounted /data (e.g. Atoll
+# volumes created by root), then it drops to nextjs (UID 1001) before running anything else.
+USER root
 EXPOSE 3000
 ENV PORT=3000
 
