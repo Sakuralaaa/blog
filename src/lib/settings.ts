@@ -45,6 +45,8 @@ export const PUBLIC_SETTING_KEYS = [
   'site.defaultAvatarUrl',
   'ui.hideAdminEntry',
   'ui.publicStylePreset',
+  'ui.backgroundUrl',
+  'ui.backgroundOverlay',
   'hero.typingTitles',
   'hero.subtitle',
   'hero.location',

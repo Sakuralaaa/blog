@@ -8,7 +8,7 @@ import { unlink } from 'node:fs/promises'
 
 export const runtime = 'nodejs'
 
-const SETTING_KEYS = ['site.logoUrl', 'site.faviconUrl', 'site.defaultAvatarUrl']
+const SETTING_KEYS = ['site.logoUrl', 'site.faviconUrl', 'site.defaultAvatarUrl', 'ui.backgroundUrl']
 const MEDIA_URL_PREFIX = '/api/files/'
 
 function unwrapSettingValue(value: unknown): unknown {

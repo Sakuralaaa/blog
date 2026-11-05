@@ -5,6 +5,7 @@
 @import './styles/reading-ui.css';
 @import './styles/scrollbars.css';
 @import './styles/image-preview.css';
+@import './styles/atoll.css';
 @source '../../node_modules/streamdown/dist/*.js';
 @custom-variant dark (&:is(.dark *));
 @theme inline {

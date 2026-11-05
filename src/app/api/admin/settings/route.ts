@@ -27,6 +27,20 @@ type AutoCreateSettingConfig = {
 }
 
 const AUTO_CREATE_SETTINGS: Record<string, AutoCreateSettingConfig> = {
+  'ui.backgroundUrl': {
+    value: { url: '' },
+    group: 'ui',
+    editable: true,
+    secret: false,
+    description: '前台背景图',
+  },
+  'ui.backgroundOverlay': {
+    value: { value: 70 },
+    group: 'ui',
+    editable: true,
+    secret: false,
+    description: '背景图遮罩强度（0-95）',
+  },
   'ui.publicStylePreset': {
     value: { preset: DEFAULT_PUBLIC_STYLE_PRESET },
     group: 'ui',

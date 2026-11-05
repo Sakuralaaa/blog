@@ -24,7 +24,7 @@ export function proxy(request: NextRequest) {
       return NextResponse.json({ error: '不允许跨站请求' }, { status: 403 })
     }
     const limit = path.includes('/import-export') ? 51 * 1024 * 1024
-      : (path === '/api/admin/files' || path === '/api/plugin/images') ? 11 * 1024 * 1024 : 1024 * 1024
+      : (path === '/api/admin/files' || path === '/api/plugin/images' || path === '/api/mcp') ? 11 * 1024 * 1024 : 1024 * 1024
     if (Number(request.headers.get('content-length')) > limit) {
       return NextResponse.json({ error: '请求内容过大' }, { status: 413 })
     }

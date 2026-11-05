@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { ImagePickerDialog } from '@/components/admin/image-picker-dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ShieldAlert } from 'lucide-react'
@@ -45,6 +47,8 @@ export default function AdminStylesPage() {
   const [publicStylePreset, setPublicStylePreset] =
     useState<PublicStylePreset>(DEFAULT_PUBLIC_STYLE_PRESET)
   const [customHeadCode, setCustomHeadCode] = useState('')
+  const [backgroundUrl, setBackgroundUrl] = useState('')
+  const [backgroundOverlay, setBackgroundOverlay] = useState(70)
   const { toast } = useToast()
 
   const fetchSettings = useCallback(async () => {
@@ -63,6 +67,15 @@ export default function AdminStylesPage() {
         const headCodeSetting = (data.settings || []).find((it: Setting) => it.key === 'site.customHeadCode')
         const rawHeadCode = readSettingCompatString(headCodeSetting, ['text', 'value']) ?? ''
         setCustomHeadCode(rawHeadCode)
+
+        const settings = (data.settings || []) as Setting[]
+        const bg = settings.find((it) => it.key === 'ui.backgroundUrl')
+        setBackgroundUrl(readSettingCompatString(bg, ['url', 'value', 'text']) ?? '')
+        const ov = settings.find((it) => it.key === 'ui.backgroundOverlay')?.value as
+          | { value?: unknown }
+          | undefined
+        const ovNum = Number(ov?.value)
+        setBackgroundOverlay(Number.isFinite(ovNum) ? ovNum : 70)
       } else {
         toast({ title: '错误', description: data.error || '获取样式设置失败', variant: 'destructive' })
       }
@@ -88,6 +101,8 @@ export default function AdminStylesPage() {
           updates: [
             { key: 'ui.publicStylePreset', value: { preset: publicStylePreset } },
             { key: 'site.customHeadCode', value: { text: customHeadCode } },
+            { key: 'ui.backgroundUrl', value: { url: backgroundUrl.trim() } },
+            { key: 'ui.backgroundOverlay', value: { value: backgroundOverlay } },
           ],
         }),
       })
@@ -119,9 +134,72 @@ export default function AdminStylesPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-xl border bg-sky-50 p-6 dark:bg-sky-950/30">
-              <h3 className="text-2xl font-bold">晴空 · 创作与记录</h3>
-              <p className="mt-2 text-sm text-muted-foreground">统一的蓝白界面，支持浅色与深色模式。轻量动效会遵循访客的减少动态效果偏好。</p>
+            <div className="relative overflow-hidden rounded-md border-2 border-black bg-[#f3efe6] p-6 shadow-[5px_5px_0_0_#000] dark:bg-[#2c2b35]">
+              <h3 className="text-2xl font-bold italic">Atoll · 块状纸面</h3>
+              <p className="mt-2 text-sm text-muted-foreground">米色纸面、粗描边和硬阴影的块状风格，支持浅色与深色模式，背景图可在下方自定义。</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>背景图</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                图片地址
+              </label>
+              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                <Input
+                  className="sm:flex-1"
+                  value={backgroundUrl}
+                  onChange={(e) => setBackgroundUrl(e.target.value)}
+                  placeholder="https://example.com/bg.jpg 或 /api/files/..."
+                  disabled={loading}
+                />
+                <ImagePickerDialog title="选择背景图" onSelect={(url) => setBackgroundUrl(url)} />
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                留空则使用默认的点阵纸背景。图片会铺满整个页面并固定不滚动。
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                遮罩强度：{backgroundOverlay}%
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={95}
+                step={5}
+                value={backgroundOverlay}
+                onChange={(e) => setBackgroundOverlay(Number(e.target.value))}
+                className="mt-3 w-full accent-violet-500"
+                disabled={loading}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                在图片上盖一层背景色，数值越大越淡，文字越清楚。
+              </p>
+            </div>
+            {backgroundUrl.trim() && (
+              <div
+                className="relative h-40 overflow-hidden rounded-md border-2 border-black"
+                style={{ backgroundImage: `url(${JSON.stringify(backgroundUrl.trim())})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+              >
+                <div className="absolute inset-0 bg-[#f3efe6] dark:bg-[#1f1e26]" style={{ opacity: backgroundOverlay / 100 }} />
+                <div className="relative m-6 inline-block rounded border-2 border-black bg-white px-4 py-2 text-sm font-bold italic shadow-[4px_4px_0_0_#000] dark:bg-zinc-800">
+                  预览效果
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-end">
+              <Button onClick={save} disabled={saving || loading}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                保存设置
+              </Button>
             </div>
           </div>
         </CardContent>

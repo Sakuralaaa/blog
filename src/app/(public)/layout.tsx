@@ -15,9 +15,26 @@ export default async function PublicLayout({ children }: { children: React.React
     getPublicCategories(3),
     getSetting<string>('site.customHeadCode', ''),
   ])
+  const rawBg = typeof settings['ui.backgroundUrl'] === 'string' ? settings['ui.backgroundUrl'].trim() : ''
+  const bgUrl = /^(https?:\/\/|\/)[^\s"'()<>]+$/.test(rawBg) ? rawBg : ''
+  const rawOverlay = Number(settings['ui.backgroundOverlay'])
+  const bgOverlay = Number.isFinite(rawOverlay) ? Math.min(95, Math.max(0, rawOverlay)) : 70
   return (
     <ReadingProvider>
-      <div className="pg-public-scope schale-site" data-page-scope="public">
+      <div
+        className="pg-public-scope schale-site"
+        data-page-scope="public"
+        data-bg={bgUrl ? '1' : undefined}
+        style={
+          bgUrl
+            ? ({
+                '--pg-bg-image': `url(${JSON.stringify(bgUrl)})`,
+                '--at-overlay': String(bgOverlay / 100),
+              } as React.CSSProperties)
+            : undefined
+        }
+      >
+        <span className="at-topline" aria-hidden="true" />
         <StartupLoader />
         <CustomHeadScripts raw={customHead || ''} />
         <a className="skip-link" href="#main-content">

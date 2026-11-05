@@ -12,6 +12,8 @@ export const API_KEY_PERMISSIONS = [
   { value: 'TAG_UPDATE', label: '修改标签' },
   { value: 'TAG_DELETE', label: '删除标签' },
   { value: 'IMAGE_UPLOAD', label: '上传图片' },
+  { value: 'PROJECT_READ', label: '查询作品' },
+  { value: 'PROJECT_WRITE', label: '管理作品' },
 ] as const
 
 export type ApiKeyPermission = typeof API_KEY_PERMISSIONS[number]['value']
