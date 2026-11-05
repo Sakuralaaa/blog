@@ -1,3 +1,14 @@
+> [!NOTE]
+> 这是 [xywml/PaperGrid](https://github.com/xywml/PaperGrid) 的改版（MIT），用于 [Atoll](https://github.com/Sakuralaaa/Atoll) 一键应用模板。镜像：`ghcr.io/sakuralaaa/blog:latest`。
+>
+> 改动：
+> - Atoll 风格界面：米色纸面、粗描边、硬阴影、点阵底，首页去掉立绘
+> - 自定义背景：后台「样式管理」可设背景图和遮罩深浅
+> - MCP 端点 `POST /api/mcp`：Claude Code、Codex 等 Agent 用后台生成的 API Key 写文章、传图、管理分类标签和「雅集」作品（新文章默认草稿）
+> - 新增 `/api/plugin/projects` 及权限 `PROJECT_READ` / `PROJECT_WRITE`
+>
+> 接入 Claude Code：`claude mcp add --transport http blog https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`
+
 <div align="center">
   <a name="readme-top"></a>
   <img src="./public/logo.svg" alt="PaperGrid 蓝色光环图标" width="96" height="96" />
