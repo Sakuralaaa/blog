@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { extractApiKey, requireApiKey } from '@/lib/api-keys'
+import { extractApiKey, hasApiKeyPermissions, requireApiKey, type ApiKeyPermission } from '@/lib/api-keys'
+import { fetchRemoteImage, RemoteImageError } from '@/lib/remote-image'
 import { readJsonBody, RequestBodyError, bodyErrorResponse } from '@/lib/request-body'
 
 // Model Context Protocol endpoint (Streamable HTTP, stateless, JSON responses).
@@ -11,12 +12,12 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05']
-const SERVER_INFO = { name: 'papergrid', version: '1.0.0' }
-const INSTRUCTIONS = `PaperGrid 博客。文章正文是 Markdown / MDX。
+const SERVER_INFO = { name: 'blog', version: '1.2.0' }
+const INSTRUCTIONS = `个人网站（作品集 + 博客）。文章正文是 Markdown / MDX。
 - 新文章默认存为草稿（status=DRAFT），确认后再用 update_post 设 status=PUBLISHED 发布。
 - tags 传标签 ID 数组；先用 list_tags 查，没有就 create_tag。分类同理（list_categories / create_category）。
 - 图片先用 upload_image 上传，再把返回的 url 写进正文或 coverImage。
-- 「雅集」作品页用 list_projects / create_project / update_project / delete_project 管理。`
+- 「作品」页（/projects，首页也会展示精选作品）用 list_projects / create_project / update_project / delete_project 管理；image 填封面图 url。`
 
 type Json = Record<string, unknown>
 type Tool = {
@@ -120,26 +121,26 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'list_projects',
-    description: '列出「雅集」作品。',
+    description: '列出「作品」页的作品与项目。',
     inputSchema: obj({}),
     run: (_a, call) => call('GET', '/api/plugin/projects'),
   },
   {
     name: 'create_project',
-    description: '在「雅集」新增作品。',
+    description: '在「作品」页新增作品（name、url 必填，可带 description 与封面 image）。',
     inputSchema: obj({ name: str, url: str, description: str, image: str }, ['name', 'url']),
     run: (a, call) => call('POST', '/api/plugin/projects', pick(a, ['name', 'url', 'description', 'image'])),
   },
   {
     name: 'update_project',
-    description: '修改「雅集」作品。',
+    description: '修改「作品」页的作品。',
     inputSchema: obj({ id: str, name: str, url: str, description: str, image: str }, ['id']),
     run: (a, call) =>
       call('PATCH', `/api/plugin/projects/${enc(String(a.id))}`, pick(a, ['name', 'url', 'description', 'image'])),
   },
   {
     name: 'delete_project',
-    description: '删除「雅集」作品（调用前先和用户确认）。',
+    description: '删除「作品」页的作品（调用前先和用户确认）。',
     inputSchema: obj({ id: str }, ['id']),
     run: (a, call) => call('DELETE', `/api/plugin/projects/${enc(String(a.id))}`),
   },
@@ -177,15 +178,23 @@ function makeCaller(apiKey: string): Caller {
   }
 }
 
-async function uploadImage(args: Json, apiKey: string) {
+async function uploadImage(args: Json, apiKey: string, permissions: ApiKeyPermission[]) {
+  // Check permission before touching the network so keys without IMAGE_UPLOAD
+  // cannot make the server fetch arbitrary URLs.
+  if (!hasApiKeyPermissions(permissions, 'IMAGE_UPLOAD')) {
+    throw new ToolError('403: 权限不足（需要「上传图片」权限）')
+  }
   let bytes: Buffer
   let type = 'application/octet-stream'
   if (typeof args.url === 'string' && args.url) {
-    if (!/^https?:\/\//i.test(args.url)) throw new ToolError('url 必须是 http(s) 地址')
-    const r = await fetch(args.url, { signal: AbortSignal.timeout(20000) })
-    if (!r.ok) throw new ToolError(`下载图片失败：${r.status}`)
-    type = r.headers.get('content-type')?.split(';')[0] || type
-    bytes = Buffer.from(await r.arrayBuffer())
+    try {
+      const remote = await fetchRemoteImage(args.url)
+      bytes = remote.bytes
+      type = remote.type || type
+    } catch (error) {
+      if (error instanceof RemoteImageError) throw new ToolError(error.message)
+      throw error
+    }
   } else if (typeof args.base64 === 'string' && args.base64) {
     const m = args.base64.match(/^data:([^;,]+);base64,([\s\S]*)$/)
     if (m) type = m[1]
@@ -212,10 +221,10 @@ async function uploadImage(args: Json, apiKey: string) {
   return data
 }
 
-async function callTool(name: string, args: Json, apiKey: string) {
+async function callTool(name: string, args: Json, apiKey: string, permissions: ApiKeyPermission[]) {
   const tool = TOOLS.find((t) => t.name === name)
   if (!tool) throw new ToolError(`未知工具：${name}`)
-  if (name === 'upload_image') return uploadImage(args, apiKey)
+  if (name === 'upload_image') return uploadImage(args, apiKey, permissions)
   return tool.run(args, makeCaller(apiKey))
 }
 
@@ -226,7 +235,7 @@ function rpcError(id: unknown, code: number, message: string) {
   return { jsonrpc: '2.0', id: id ?? null, error: { code, message } }
 }
 
-async function handleMessage(msg: Json, apiKey: string) {
+async function handleMessage(msg: Json, apiKey: string, permissions: ApiKeyPermission[]) {
   const id = msg.id
   const method = String(msg.method || '')
   const params = (msg.params && typeof msg.params === 'object' ? msg.params : {}) as Json
@@ -251,7 +260,7 @@ async function handleMessage(msg: Json, apiKey: string) {
       const name = String(params.name || '')
       const args = (params.arguments && typeof params.arguments === 'object' ? params.arguments : {}) as Json
       try {
-        const out = await callTool(name, args, apiKey)
+        const out = await callTool(name, args, apiKey, permissions)
         return rpcResult(id, { content: [{ type: 'text', text: JSON.stringify(out, null, 2) }] })
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e)
@@ -283,7 +292,13 @@ export async function POST(req: Request) {
   }
   const batch = Array.isArray(body)
   const messages = (batch ? body : [body]) as Json[]
-  const replies = (await Promise.all(messages.map((m) => handleMessage(m, apiKey)))).filter(Boolean)
+  if (messages.length > 20) {
+    return NextResponse.json(rpcError(null, -32600, '单次批量请求最多 20 条'), { status: 400 })
+  }
+  const permissions = auth.apiKey?.permissions ?? []
+  const replies = (
+    await Promise.all(messages.map((m) => handleMessage(m, apiKey, permissions)))
+  ).filter(Boolean)
   if (replies.length === 0) return new Response(null, { status: 202 })
   return NextResponse.json(batch ? replies : replies[0])
 }

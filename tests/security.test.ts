@@ -77,3 +77,23 @@ test('body reader enforces actual streamed bytes without trusting Content-Length
     await assert.rejects(readJsonBody(new Request('https://blog.test', { method: 'POST', headers: { 'content-type': 'application/json' }, body })), RequestBodyError)
   }
 })
+
+test('remote image URL validation rejects non-http(s), credentials and private hosts', async () => {
+  const { validateRemoteImageUrl } = await import('../src/lib/remote-image')
+  for (const bad of [
+    'file:///etc/passwd',
+    'ftp://example.com/a.png',
+    'http://user:pass@example.com/a.png',
+    'http://127.0.0.1/a.png',
+    'http://169.254.169.254/latest/meta-data/',
+    'http://[::1]/a.png',
+    'http://10.0.0.8/a.png',
+    'http://localhost/a.png',
+    'http://metadata.google.internal/',
+    'http://intranet/a.png',
+  ]) {
+    assert.throws(() => validateRemoteImageUrl(bad), Error, bad)
+  }
+  assert.equal(validateRemoteImageUrl('https://example.com/a.png').hostname, 'example.com')
+  assert.equal(validateRemoteImageUrl('http://93.184.216.34/a.png').hostname, '93.184.216.34')
+})
