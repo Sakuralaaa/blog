@@ -29,6 +29,14 @@ export function proxy(request: NextRequest) {
       return NextResponse.json({ error: '请求内容过大' }, { status: 413 })
     }
   }
+  // ADMIN_FULL API keys act as the admin elsewhere, but may not mint/alter keys or
+  // touch the login email/password, so a leaked key can't entrench itself.
+  if (/^\/api\/admin\/(api-keys|account)(\/|$)/.test(path)) {
+    const authz = request.headers.get('authorization') || ''
+    if (request.headers.get('x-api-key') || /^Bearer\s+eak_/i.test(authz)) {
+      return NextResponse.json({ error: 'API Key 不能管理密钥或登录账号' }, { status: 403 })
+    }
+  }
   const response = NextResponse.next()
   response.headers.set('Content-Security-Policy', cspHeader)
   // The media handler chooses its cache policy only after checking access.

@@ -14,6 +14,7 @@ export const API_KEY_PERMISSIONS = [
   { value: 'IMAGE_UPLOAD', label: '上传图片' },
   { value: 'PROJECT_READ', label: '查询作品' },
   { value: 'PROJECT_WRITE', label: '管理作品' },
+  { value: 'ADMIN_FULL', label: '完全管理（等同管理员后台，含设置、个人资料、评论、用户、文件）' },
 ] as const
 
 export type ApiKeyPermission = typeof API_KEY_PERMISSIONS[number]['value']

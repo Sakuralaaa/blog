@@ -12,12 +12,16 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05']
-const SERVER_INFO = { name: 'lagoon', version: '1.3.2' }
+const SERVER_INFO = { name: 'lagoon', version: '1.4.0' }
 const INSTRUCTIONS = `个人网站（作品集 + 博客）。文章正文是 Markdown / MDX。
 - 新文章默认存为草稿（status=DRAFT），确认后再用 update_post 设 status=PUBLISHED 发布。
 - tags 传标签 ID 数组；先用 list_tags 查，没有就 create_tag。分类同理（list_categories / create_category）。
 - 图片先用 upload_image 上传，再把返回的 url 写进正文或 coverImage。
-- 「作品」页（/projects，首页也会展示精选作品）用 list_projects / create_project / update_project / delete_project 管理；image 填封面图 url。`
+- 「作品」页（/projects，首页也会展示精选作品）用 list_projects / create_project / update_project / delete_project 管理；image 填封面图 url。
+- 以下工具需要密钥带「完全管理」(ADMIN_FULL) 权限：
+  - 个人资料与站点设置：get_settings 查看全部设置项，update_settings 批量修改。常用 key：site.ownerName（名字）、site.defaultAvatarUrl（头像）、site.title、site.description、site.logoUrl、site.faviconUrl、profile.tagline / signature / role / location / bio / techStack / hobbies / contactIntro / contactEmail / contactGithub / contactX / contactBilibili / contactQQ。value 的结构照 get_settings 返回的原样（如 {"text": "..."}、{"url": "..."}、{"name": "..."}）。
+  - 评论：list_comments / moderate_comment / delete_comment；用户：list_users / set_user_role / delete_user；文件：list_files / delete_file；统计：get_stats。
+  - 其余后台接口用 admin_request 直接调用 /api/admin/*（密钥和登录账号相关接口除外）。删除类操作先和用户确认。`
 
 type Json = Record<string, unknown>
 type Tool = {
@@ -25,6 +29,7 @@ type Tool = {
   description: string
   inputSchema: Json
   run: (args: Json, call: Caller) => Promise<unknown>
+  admin?: boolean
 }
 type Caller = (method: string, path: string, body?: unknown) => Promise<unknown>
 
@@ -42,6 +47,11 @@ const postFields = {
 const obj = (properties: Json, required: string[] = []) => ({ type: 'object', properties, required, additionalProperties: false })
 const pick = (args: Json, keys: string[]) => Object.fromEntries(keys.filter((k) => args[k] !== undefined).map((k) => [k, args[k]]))
 const enc = encodeURIComponent
+const query = (args: Json, keys: string[]) => {
+  const q = new URLSearchParams()
+  for (const k of keys) if (args[k] !== undefined && args[k] !== '') q.set(k, String(args[k]))
+  return q.toString()
+}
 
 const PROJECT_FIELDS = ['name', 'slug', 'url', 'description', 'image', 'role', 'period', 'tags', 'gallery', 'content']
 const PROJECT_SCHEMA = Object.fromEntries(PROJECT_FIELDS.map((field) => [field, str]))
@@ -148,6 +158,129 @@ const TOOLS: Tool[] = [
     inputSchema: obj({ id: str }, ['id']),
     run: (a, call) => call('DELETE', `/api/plugin/projects/${enc(String(a.id))}`),
   },
+  {
+    name: 'get_settings',
+    description: '读取全部站点设置与个人资料（需「完全管理」权限）。',
+    inputSchema: obj({ group: { ...str, description: '可选，只看某个分组，如 profile、site、display' } }),
+    admin: true,
+    run: async (a, call) => {
+      const data = (await call('GET', '/api/admin/settings')) as { settings?: Array<Json> }
+      const list = data?.settings ?? []
+      return a.group ? list.filter((s) => s.group === a.group) : list
+    },
+  },
+  {
+    name: 'update_settings',
+    description:
+      '批量修改站点设置 / 个人资料（需「完全管理」权限）。updates 为 [{ key, value }]，value 结构与 get_settings 返回一致，例如 { key: "profile.bio", value: { text: "..." } }。',
+    inputSchema: obj(
+      {
+        updates: {
+          type: 'array',
+          items: { type: 'object', properties: { key: str, value: {} }, required: ['key', 'value'] },
+        },
+      },
+      ['updates']
+    ),
+    admin: true,
+    run: (a, call) => call('PATCH', '/api/admin/settings', { updates: a.updates }),
+  },
+  {
+    name: 'list_comments',
+    description: '列出评论，可按状态筛选（需「完全管理」权限）。',
+    inputSchema: obj({
+      page: { type: 'integer', minimum: 1 },
+      limit: { type: 'integer', minimum: 1, maximum: 100 },
+      status: { type: 'string', enum: ['APPROVED', 'PENDING', 'SPAM', 'REJECTED'] },
+    }),
+    admin: true,
+    run: (a, call) => call('GET', `/api/admin/comments?${query(a, ['page', 'limit', 'status'])}`),
+  },
+  {
+    name: 'moderate_comment',
+    description: '修改评论状态：通过 / 待审 / 垃圾 / 拒绝（需「完全管理」权限）。',
+    inputSchema: obj({ id: str, status: { type: 'string', enum: ['APPROVED', 'PENDING', 'SPAM', 'REJECTED'] } }, ['id', 'status']),
+    admin: true,
+    run: (a, call) => call('PATCH', `/api/admin/comments/${enc(String(a.id))}`, { status: a.status }),
+  },
+  {
+    name: 'delete_comment',
+    description: '删除评论（不可恢复，先和用户确认；需「完全管理」权限）。',
+    inputSchema: obj({ id: str }, ['id']),
+    admin: true,
+    run: (a, call) => call('DELETE', `/api/admin/comments/${enc(String(a.id))}`),
+  },
+  {
+    name: 'list_users',
+    description: '列出用户（需「完全管理」权限）。',
+    inputSchema: obj({
+      page: { type: 'integer', minimum: 1 },
+      limit: { type: 'integer', minimum: 1, maximum: 100 },
+      search: str,
+      role: { type: 'string', enum: ['USER', 'ADMIN'] },
+    }),
+    admin: true,
+    run: (a, call) => call('GET', `/api/admin/users?${query(a, ['page', 'limit', 'search', 'role'])}`),
+  },
+  {
+    name: 'set_user_role',
+    description: '修改用户角色（需「完全管理」权限）。',
+    inputSchema: obj({ id: str, role: { type: 'string', enum: ['USER', 'ADMIN'] } }, ['id', 'role']),
+    admin: true,
+    run: (a, call) => call('PATCH', `/api/admin/users/${enc(String(a.id))}`, { role: a.role }),
+  },
+  {
+    name: 'delete_user',
+    description: '删除用户（不可恢复，先和用户确认；需「完全管理」权限）。',
+    inputSchema: obj({ id: str }, ['id']),
+    admin: true,
+    run: (a, call) => call('DELETE', `/api/admin/users/${enc(String(a.id))}`),
+  },
+  {
+    name: 'list_files',
+    description: '列出文件管理里的文件（需「完全管理」权限）。',
+    inputSchema: obj({
+      page: { type: 'integer', minimum: 1 },
+      limit: { type: 'integer', minimum: 1, maximum: 100 },
+      q: str,
+      kind: { type: 'string', enum: ['all', 'images'] },
+    }),
+    admin: true,
+    run: (a, call) => call('GET', `/api/admin/files?${query(a, ['page', 'limit', 'q', 'kind'])}`),
+  },
+  {
+    name: 'delete_file',
+    description: '删除文件；仍被引用时需 force=true（先和用户确认；需「完全管理」权限）。',
+    inputSchema: obj({ id: str, force: { type: 'boolean' } }, ['id']),
+    admin: true,
+    run: (a, call) => call('DELETE', `/api/admin/files/${enc(String(a.id))}${a.force ? '?force=1' : ''}`),
+  },
+  {
+    name: 'get_stats',
+    description: '后台统计概览（需「完全管理」权限）。',
+    inputSchema: obj({}),
+    admin: true,
+    run: (_a, call) => call('GET', '/api/admin/stats'),
+  },
+  {
+    name: 'admin_request',
+    description:
+      '直接调用任意后台接口 /api/admin/*（需「完全管理」权限）。path 以 /api/admin/ 开头，可带查询串；body 为 JSON。密钥管理与登录账号接口不可用。',
+    inputSchema: obj(
+      {
+        method: { type: 'string', enum: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'] },
+        path: str,
+        body: {},
+      },
+      ['method', 'path']
+    ),
+    admin: true,
+    run: (a, call) => {
+      const path = String(a.path || '')
+      if (!/^\/api\/admin\//.test(path) || path.includes('..')) throw new ToolError('path 必须以 /api/admin/ 开头')
+      return call(String(a.method), path, a.body)
+    },
+  },
 ]
 
 class ToolError extends Error {}
@@ -229,6 +362,9 @@ async function callTool(name: string, args: Json, apiKey: string, permissions: A
   const tool = TOOLS.find((t) => t.name === name)
   if (!tool) throw new ToolError(`未知工具：${name}`)
   if (name === 'upload_image') return uploadImage(args, apiKey, permissions)
+  if (tool.admin && !hasApiKeyPermissions(permissions, 'ADMIN_FULL')) {
+    throw new ToolError('403: 权限不足（需要「完全管理」权限，请在后台 → 接口密钥 里勾选）')
+  }
   return tool.run(args, makeCaller(apiKey))
 }
 

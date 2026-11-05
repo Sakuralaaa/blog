@@ -17,7 +17,7 @@
 - **四套界面风格**：Atoll 纸面、极简、杂志、柔和；后台设默认，访客可在导航栏切换；深色模式；自定义背景图与遮罩
 - **图片直接传**：后台所有图片栏（Logo、Favicon、头像、背景、作品封面、截图、文章封面）旁都有「上传」按钮，从电脑选图即传即填；也能把图片拖到输入框上或 Ctrl+V 粘贴截图。图库弹窗同样支持拖拽和粘贴
 - **管理后台**：文章、作品、分类、标签、评论、用户、文件管理、导入导出、接口密钥、站点设置
-- **给 Agent 用**：MCP 端点 `POST /api/mcp`，Claude Code、Codex 等用后台生成的 API Key 写文章、传图、管理作品（含详情页字段）。接入：`claude mcp add --transport http lagoon https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`；另有 `/api/plugin/*` REST 接口
+- **给 Agent 用**：MCP 端点 `POST /api/mcp`，Claude Code、Codex 等用后台生成的 API Key 写文章、传图、管理作品（含详情页字段）。接入：`claude mcp add --transport http lagoon https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`；另有 `/api/plugin/*` REST 接口。密钥勾选「完全管理」（ADMIN_FULL）后等同管理员：MCP 额外提供 get_settings / update_settings（个人资料、站点设置）、评论审核、用户、文件、统计和通用的 admin_request（任意 `/api/admin/*`）；密钥管理与登录账号接口不对密钥开放
 - **升级无感**：每次启动自动迁移数据库；还在用旧版模板默认文案（例如旧站名）的设置项会自动换成新默认值，你改过的内容不动
 - 技术栈：Next.js App Router + React 19、Prisma（SQLite）、NextAuth
 

@@ -55,6 +55,8 @@ export function hasApiKeyPermissions(
   permissions: ApiKeyPermission[],
   required: ApiKeyPermission | ApiKeyPermission[]
 ) {
+  // ADMIN_FULL implies every other permission.
+  if (permissions.includes('ADMIN_FULL')) return true
   const requiredList = Array.isArray(required) ? required : [required]
   return requiredList.every((perm) => permissions.includes(perm))
 }
