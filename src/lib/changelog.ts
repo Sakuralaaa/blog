@@ -5,6 +5,9 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.3.2', date: '2026-11-06', highlights: [
+    '首页滚动卡片收进页面内容宽度，两端柔和淡出，一屏约四张。',
+  ] },
   { version: '1.3.1', date: '2026-11-06', highlights: [
     '图标改为更简约的双圆嵌套样式。',
   ] },
