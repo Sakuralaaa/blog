@@ -38,7 +38,7 @@ export function ScrollProgress() {
   }, [pathname])
 
   return (
-    <div className="ba-scroll-track" aria-hidden="true">
+    <div className="ui-scroll-track" aria-hidden="true">
       <div ref={fillRef} style={{ transform: 'scaleX(0)' }} />
     </div>
   )

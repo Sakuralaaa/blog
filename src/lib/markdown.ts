@@ -36,3 +36,19 @@ export function extractHeadingsFromMarkdown(markdown: string, maxDepth = 3): Mar
 
   return headings
 }
+
+/**
+ * Drop a leading `# Title` line when it repeats the post title, so the article page
+ * does not show the same H1 twice (header + body).
+ */
+export function stripLeadingTitle(markdown: string, title: string): string {
+  const normalize = (value: string) =>
+    value
+      .replace(/[*_`~]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase()
+  const match = markdown.match(/^(?:\s*\n)*#[ \t]+(.+?)[ \t#]*(?:\r?\n|$)/)
+  if (!match || normalize(match[1]) !== normalize(title)) return markdown
+  return markdown.slice(match[0].length).replace(/^\s*\n/, '')
+}

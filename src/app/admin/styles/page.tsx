@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ShieldAlert } from 'lucide-react'
 import {
-  DEFAULT_PUBLIC_STYLE_PRESET,
-  type PublicStylePreset,
-  normalizePublicStylePreset,
-} from '@/lib/public-style-preset'
+  DEFAULT_SITE_STYLE,
+  SITE_STYLES,
+  normalizeSiteStyle,
+  type SiteStyle,
+} from '@/lib/site-styles'
 
 type Setting = {
   key: string
@@ -44,8 +45,8 @@ function readSettingCompatString(
 export default function AdminStylesPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [publicStylePreset, setPublicStylePreset] =
-    useState<PublicStylePreset>(DEFAULT_PUBLIC_STYLE_PRESET)
+  const [siteStyle, setSiteStyle] = useState<SiteStyle>(DEFAULT_SITE_STYLE)
+  const [allowStyleSwitch, setAllowStyleSwitch] = useState(true)
   const [customHeadCode, setCustomHeadCode] = useState('')
   const [backgroundUrl, setBackgroundUrl] = useState('')
   const [backgroundOverlay, setBackgroundOverlay] = useState(70)
@@ -57,12 +58,12 @@ export default function AdminStylesPage() {
       const res = await fetch('/api/admin/settings')
       const data = await res.json()
       if (res.ok) {
-        const presetSetting = (data.settings || []).find(
-          (it: Setting) => it.key === 'ui.publicStylePreset'
-        )
-        const rawPreset = readSettingCompatString(presetSetting, ['preset', 'value', 'text', 'style'])
-          ?? DEFAULT_PUBLIC_STYLE_PRESET
-        setPublicStylePreset(normalizePublicStylePreset(rawPreset))
+        const styleSetting = (data.settings || []).find((it: Setting) => it.key === 'ui.style')
+        setSiteStyle(normalizeSiteStyle(readSettingCompatString(styleSetting, ['value', 'style'])))
+        const switchSetting = (data.settings || []).find(
+          (it: Setting) => it.key === 'ui.allowStyleSwitch'
+        )?.value as { enabled?: unknown } | undefined
+        setAllowStyleSwitch(switchSetting?.enabled !== false)
 
         const headCodeSetting = (data.settings || []).find((it: Setting) => it.key === 'site.customHeadCode')
         const rawHeadCode = readSettingCompatString(headCodeSetting, ['text', 'value']) ?? ''
@@ -99,7 +100,8 @@ export default function AdminStylesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           updates: [
-            { key: 'ui.publicStylePreset', value: { preset: publicStylePreset } },
+            { key: 'ui.style', value: { value: siteStyle } },
+            { key: 'ui.allowStyleSwitch', value: { enabled: allowStyleSwitch } },
             { key: 'site.customHeadCode', value: { text: customHeadCode } },
             { key: 'ui.backgroundUrl', value: { url: backgroundUrl.trim() } },
             { key: 'ui.backgroundOverlay', value: { value: backgroundOverlay } },
@@ -132,13 +134,63 @@ export default function AdminStylesPage() {
         <CardHeader>
           <CardTitle>界面风格</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="relative overflow-hidden rounded-md border-2 border-black bg-[#f3efe6] p-6 shadow-[5px_5px_0_0_#000] dark:bg-[#2c2b35]">
-              <h3 className="text-2xl font-bold italic">Atoll · 块状纸面</h3>
-              <p className="mt-2 text-sm text-muted-foreground">米色纸面、粗描边和硬阴影的块状风格，支持浅色与深色模式，背景图可在下方自定义。</p>
-            </div>
+        <CardContent className="space-y-5">
+          <p className="text-muted-foreground text-sm">
+            选择前台默认风格。每种风格都有亮色与暗色两套配色，访客的亮/暗偏好互不影响。
+          </p>
+          <div className="style-preview-grid" role="radiogroup" aria-label="前台默认风格">
+            {SITE_STYLES.map((style) => {
+              const [bg, surface, accent, hi] = style.swatches
+              const radius = { atoll: 4, minimal: 10, editorial: 1, soft: 14 }[style.id]
+              const border =
+                style.id === 'atoll' ? '2px solid #16151a' : style.id === 'editorial' ? '1px solid #1c1917' : '1px solid #e4e4e7'
+              const shadow =
+                style.id === 'atoll'
+                  ? '3px 3px 0 #16151a'
+                  : style.id === 'soft'
+                    ? '0 8px 18px -8px rgba(76,61,180,.45)'
+                    : 'none'
+              return (
+                <button
+                  key={style.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={siteStyle === style.id}
+                  className="style-preview"
+                  onClick={() => setSiteStyle(style.id)}
+                >
+                  <span className="style-preview__canvas" style={{ background: bg }}>
+                    <span
+                      className="style-preview__card"
+                      style={{ background: surface, border, borderRadius: radius, boxShadow: shadow }}
+                    />
+                    <span
+                      className="style-preview__dot"
+                      style={{
+                        background: `linear-gradient(135deg, ${accent} 50%, ${hi} 50%)`,
+                        borderRadius: style.id === 'minimal' || style.id === 'soft' ? 999 : radius,
+                        border: style.id === 'atoll' ? '2px solid #16151a' : undefined,
+                      }}
+                    />
+                  </span>
+                  <strong>
+                    {style.label}
+                    {style.id === DEFAULT_SITE_STYLE ? '（默认）' : ''}
+                  </strong>
+                  <span>{style.description}</span>
+                </button>
+              )
+            })}
           </div>
+          <label className="flex items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={allowStyleSwitch}
+              onChange={(e) => setAllowStyleSwitch(e.target.checked)}
+              className="h-4 w-4"
+            />
+            允许访客在导航栏自行切换风格（选择会保存在访客浏览器中）
+          </label>
         </CardContent>
       </Card>
 
@@ -186,11 +238,11 @@ export default function AdminStylesPage() {
             </div>
             {backgroundUrl.trim() && (
               <div
-                className="relative h-40 overflow-hidden rounded-md border-2 border-black"
+                className="relative h-40 overflow-hidden rounded-md border"
                 style={{ backgroundImage: `url(${JSON.stringify(backgroundUrl.trim())})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
               >
-                <div className="absolute inset-0 bg-[#f3efe6] dark:bg-[#1f1e26]" style={{ opacity: backgroundOverlay / 100 }} />
-                <div className="relative m-6 inline-block rounded border-2 border-black bg-white px-4 py-2 text-sm font-bold italic shadow-[4px_4px_0_0_#000] dark:bg-zinc-800">
+                <div className="absolute inset-0 bg-background" style={{ opacity: backgroundOverlay / 100 }} />
+                <div className="card relative m-6 inline-block px-4 py-2 text-sm font-bold">
                   预览效果
                 </div>
               </div>

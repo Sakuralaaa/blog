@@ -8,20 +8,15 @@ const output = '.next/standalone'
 const bcryptDestination = path.join(output, 'node_modules/bcryptjs')
 await rm(bcryptDestination, { recursive: true, force: true })
 await cp(await realpath('node_modules/bcryptjs'), bcryptDestination, { recursive: true })
-// These committed assets are required by the default Hero; never ship a partial character.
+// Self-hosted fonts are part of first paint; fail the build instead of shipping fallbacks.
 for (const asset of [
-  'arona-touch-eyes.webp',
-  'arona-expressions.webp',
-  'plana-touch.webp',
-  'plana-expressions.webp',
-  'blue-archive/arona-loading.webp',
-  'blue-archive/plana-loading.webp',
-  'blue-archive/loading-desktop.webp',
-  'blue-archive/loading-mobile.webp',
-  'blue-archive/triangle-grid.webp',
+  'fonts/inter-5.3.0/inter-latin-wght-normal.woff2',
+  'fonts/jetbrains-mono-5.3.0/jetbrains-mono-latin-wght-normal.woff2',
+  'fonts/noto-sans-sc-5.3.0/noto-sans-sc-latin-wght-normal.woff2',
+  'fonts/source-serif-4-5.3.1/source-serif-4-latin-wght-normal.woff2',
 ]) {
-  await access(path.join('public/assets', asset)).catch(() => {
-    throw new Error(`首屏资源缺失：public/assets/${asset}，请确认资源已随仓库检出`)
+  await access(path.join('public', asset)).catch(() => {
+    throw new Error(`首屏资源缺失：public/${asset}，请确认资源已随仓库检出`)
   })
 }
 // Also remove leftovers when rebuilding into an existing standalone directory.

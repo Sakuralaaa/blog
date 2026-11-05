@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
 
 export interface HeadingItem {
   id: string
@@ -75,33 +73,21 @@ export function TableOfContents({ headings }: { headings: HeadingItem[] }) {
   if (!headings || headings.length === 0) return null
 
   return (
-    <Card className="ba-toc">
-      <CardHeader>
-        <h3 className="font-semibold">目录</h3>
-      </CardHeader>
-      <CardContent>
-        <div ref={containerRef} className="ba-toc-scroll overflow-y-auto scroll-smooth">
-          <nav className="space-y-1 pr-2" aria-label="文章目录">
-            {headings.map((heading) => (
-              <a
-                key={heading.id}
-                ref={activeId === heading.id ? activeRef : null}
-                href={`#${heading.id}`}
-                aria-current={activeId === heading.id ? 'location' : undefined}
-                className={cn(
-                  'block text-sm transition-[color,background-color,translate] duration-200 ease-out hover:text-blue-600 dark:hover:text-blue-400',
-                  activeId === heading.id
-                    ? 'translate-x-1 font-medium text-blue-600 dark:text-blue-400'
-                    : 'text-gray-600 dark:text-gray-400',
-                  heading.level === 1 ? 'pl-0' : heading.level === 2 ? 'pl-4' : 'pl-8'
-                )}
-              >
-                {heading.text}
-              </a>
-            ))}
-          </nav>
-        </div>
-      </CardContent>
-    </Card>
+    <nav className="card aside-card toc" aria-label="文章目录">
+      <h2 className="aside-card__title">目录</h2>
+      <div ref={containerRef} className="toc__scroll">
+        {headings.map((heading) => (
+          <a
+            key={heading.id}
+            ref={activeId === heading.id ? activeRef : null}
+            href={`#${heading.id}`}
+            aria-current={activeId === heading.id ? 'location' : undefined}
+            data-level={heading.level}
+          >
+            {heading.text}
+          </a>
+        ))}
+      </div>
+    </nav>
   )
 }

@@ -73,28 +73,22 @@ export function RelatedPostsList({ posts }: { posts: RelatedPostsListItem[] }) {
   }, [posts, slugKey])
 
   return (
-    <ul className="space-y-3">
+    <ul className="related-list">
       {posts.map((related) => (
         <li key={related.id}>
-          <Link href={`/posts/${related.slug}`} className="group block">
-            <p className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
-              {related.title}
-            </p>
-            <div className="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-              <span>{related.publishedLabel}</span>
-              <span>•</span>
-              <Eye className="inline h-3 w-3" />
-              <span>{counts[related.slug] ?? related.viewCount?.count ?? 0}</span>
+          <Link href={`/posts/${related.slug}`}>
+            <strong>{related.title}</strong>
+            <span>
+              {related.publishedLabel}
+              <Eye size={12} aria-hidden="true" />
+              {counts[related.slug] ?? related.viewCount?.count ?? 0}
               {related.isProtected && (
                 <>
-                  <span>•</span>
-                  <span className="pg-lock-inline inline-flex items-center gap-1">
-                    <Lock className="inline h-3 w-3" />
-                    <span>加密</span>
-                  </span>
+                  <Lock size={12} aria-hidden="true" />
+                  加密
                 </>
               )}
-            </div>
+            </span>
           </Link>
         </li>
       ))}

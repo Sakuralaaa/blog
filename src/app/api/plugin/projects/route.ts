@@ -31,7 +31,8 @@ export async function POST(req: Request) {
     const project = await prisma.project.create({
       data: { name, url, description: text(body.description, 2000) || null, image: text(body.image, 2048) || null },
     })
-    revalidatePath('/yaji')
+    revalidatePath('/projects')
+    revalidatePath('/')
     return NextResponse.json({ project }, { status: 201, headers: auth.headers })
   } catch (error) {
     if (error instanceof RequestBodyError) return bodyErrorResponse(error)

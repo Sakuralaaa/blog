@@ -247,16 +247,16 @@ export default function AdminApiKeysPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            用上面生成的密钥，就能让 Claude Code、Codex 等 Agent 直接查、写、改文章，上传图片，管理分类、标签和「雅集」作品。勾选哪些权限，Agent 就只能做哪些事。
+            用上面生成的密钥，就能让 Claude Code、Codex 等 Agent 直接查、写、改文章，上传图片，管理分类、标签和「作品」。勾选哪些权限，Agent 就只能做哪些事。
           </p>
           <div>
             <div className="font-medium">Claude Code</div>
-            <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">{`claude mcp add --transport http papergrid ${mcpUrl} \\
+            <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">{`claude mcp add --transport http blog ${mcpUrl} \\
   --header "Authorization: Bearer <你的 API Key>"`}</pre>
           </div>
           <div>
             <div className="font-medium">Codex（~/.codex/config.toml）</div>
-            <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">{`[mcp_servers.papergrid]
+            <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">{`[mcp_servers.blog]
 url = "${mcpUrl}"
 bearer_token_env_var = "PAPERGRID_API_KEY"`}</pre>
             <p className="mt-1 text-xs text-muted-foreground">然后在终端里 export PAPERGRID_API_KEY=你的密钥。</p>

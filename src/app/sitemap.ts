@@ -44,7 +44,7 @@ const STATIC_ROUTES: Array<{
     priority: 0.6,
   },
   {
-    path: '/yaji',
+    path: '/projects',
     changeFrequency: 'weekly',
     priority: 0.7,
   },

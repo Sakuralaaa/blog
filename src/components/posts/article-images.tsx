@@ -7,7 +7,7 @@ export type PreviewImage = { src: string; alt: string; width: number; height: nu
 const ImagePreviewDialog = dynamic(() => import('./image-preview-dialog'), {
   ssr: false,
   loading: () => (
-    <div className="ba-image-preview-pending" role="status">
+    <div className="ui-image-preview-pending" role="status">
       正在打开图片…
     </div>
   ),

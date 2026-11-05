@@ -29,7 +29,8 @@ export async function PATCH(req: Request, { params }: Ctx) {
     const exists = await prisma.project.findUnique({ where: { id }, select: { id: true } })
     if (!exists) return NextResponse.json({ error: '作品不存在' }, { status: 404, headers: auth.headers })
     const project = await prisma.project.update({ where: { id }, data })
-    revalidatePath('/yaji')
+    revalidatePath('/projects')
+    revalidatePath('/')
     return NextResponse.json({ project }, { headers: auth.headers })
   } catch (error) {
     if (error instanceof RequestBodyError) return bodyErrorResponse(error)
@@ -46,6 +47,7 @@ export async function DELETE(req: Request, { params }: Ctx) {
   const exists = await prisma.project.findUnique({ where: { id }, select: { id: true } })
   if (!exists) return NextResponse.json({ error: '作品不存在' }, { status: 404, headers: auth.headers })
   await prisma.project.delete({ where: { id } })
-  revalidatePath('/yaji')
+  revalidatePath('/projects')
+  revalidatePath('/')
   return NextResponse.json({ ok: true }, { headers: auth.headers })
 }

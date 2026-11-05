@@ -50,9 +50,9 @@ export function NavigationDrawer({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
       <Dialog.Portal>
-        <Dialog.Overlay className="ba-drawer-overlay" />
+        <Dialog.Overlay className="drawer-overlay" />
         <Dialog.Content
-          className="ba-drawer"
+          className="drawer"
           data-side={side}
           onOpenAutoFocus={(event) => {
             returnFocus.current =
@@ -66,16 +66,16 @@ export function NavigationDrawer({
             }
           }}
         >
-          <header className="ba-drawer-header">
+          <header className="drawer-header">
             <div>
               <Dialog.Title>{title}</Dialog.Title>
             </div>
-            <Dialog.Close className="ba-icon-button" aria-label="关闭导航">
-              <X size={22} />
+            <Dialog.Close className="icon-btn" aria-label="关闭导航">
+              <X size={18} />
             </Dialog.Close>
             <Dialog.Description className="sr-only">{description}</Dialog.Description>
           </header>
-          <div className="ba-drawer-scroll">{children}</div>
+          <div className="drawer-scroll">{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

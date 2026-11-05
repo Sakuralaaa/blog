@@ -737,26 +737,15 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  版权信息
+                  版权署名
                 </label>
                 <Input
                   className="mt-2"
                   value={String(getVal('site.footer_copyright') || '')}
                   onChange={(e) => setVal('site.footer_copyright', e.target.value)}
+                  placeholder="留空则使用站长名称"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  驱动信息
-                </label>
-                <select
-                  className="mt-2 w-full rounded border bg-transparent px-3 py-2"
-                  value={getBoolVal('site.footer_powered_by_enabled', true) ? 'true' : 'false'}
-                  onChange={(e) => setVal('site.footer_powered_by_enabled', e.target.value === 'true')}
-                >
-                  <option value="true">开启</option>
-                  <option value="false">关闭</option>
-                </select>
+                <p className="text-muted-foreground mt-1 text-xs">页脚显示为“© 年份 署名”。</p>
               </div>
             </div>
           </CardContent>
@@ -837,7 +826,7 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  技术栈
+                  关注领域 / 技能
                 </label>
                 <Textarea
                   className="mt-2"
@@ -845,7 +834,7 @@ export default function AdminSettingsPage() {
                   value={String(getVal('profile.techStack') || '')}
                   onChange={(e) => setVal('profile.techStack', e.target.value)}
                 />
-                <p className="text-muted-foreground mt-1 text-xs">示例：前端: React, Next.js</p>
+                <p className="text-muted-foreground mt-1 text-xs">每行一组，可写分组名，例如“设计: Figma, 插画”。留空则不显示。</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -1172,7 +1161,7 @@ export default function AdminSettingsPage() {
                   className="mt-2"
                   value={String(getVal('email.from') || '')}
                   onChange={(e) => setVal('email.from', e.target.value)}
-                  placeholder="PaperGrid 通知"
+                  placeholder="网站通知"
                 />
                 <p className="text-muted-foreground mt-1 text-xs">
                   实际发件地址固定使用 SMTP_USER，此项仅用于邮件展示名称。

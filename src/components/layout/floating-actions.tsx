@@ -21,7 +21,7 @@ export function FloatingActions() {
   const { post, hasToc, showTools } = useReadingState()
   return (
     <div
-      className="ba-float-anchor"
+      className="ui-float-anchor"
       data-visible={showTools || Boolean(post) || open || Boolean(panel)}
       inert={!showTools && !post && !open && !panel}
     >
@@ -29,17 +29,17 @@ export function FloatingActions() {
         <DropdownMenuTrigger asChild>
           <button
             ref={trigger}
-            className="ba-float-trigger"
+            className="ui-float-trigger"
             aria-label={open ? '收起阅读工具' : '打开多功能工具窗'}
           >
-            <span className="ba-float-face" aria-hidden="true">
-              <PanelsTopLeft size={18} className="ba-tool-icon" />
-              <X size={18} className="ba-tool-close" />
+            <span className="ui-float-face" aria-hidden="true">
+              <PanelsTopLeft size={18} className="ui-tool-icon" />
+              <X size={18} className="ui-tool-close" />
             </span>
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="ba-toolbox"
+          className="ui-toolbox"
           side="top"
           align="end"
           sideOffset={6}
@@ -53,10 +53,10 @@ export function FloatingActions() {
             else if (next) setPanel(next)
           }}
         >
-          <div className="ba-toolbox-heading">
+          <div className="ui-toolbox-heading">
             <span>随手工具</span>
           </div>
-          <div className="ba-toolbox-items">
+          <div className="ui-toolbox-items">
             <DropdownMenuItem
               onSelect={() => {
                 nextPanel.current = 'nav'

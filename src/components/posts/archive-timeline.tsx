@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { TriangleLoader } from '@/components/loading/triangle-loader'
+import { Spinner } from '@/components/loading/spinner'
 import { ChevronDown, ArrowUpRight, Lock } from 'lucide-react'
 import type { ArchiveMonthPage, ArchivePostNode, ArchiveYearNode } from '@/types/archive'
 
@@ -187,8 +187,8 @@ export function ArchiveTimeline({ years }: ArchiveTimelineProps) {
   }
 
   return (
-    <div className="ba-archive-timeline">
-      <aside className="ba-year-index">
+    <div className="ui-archive-timeline">
+      <aside className="ui-year-index">
         <p>按年份翻阅</p>
         <nav aria-label="归档年份">
           {years.map((year) => (
@@ -202,7 +202,7 @@ export function ArchiveTimeline({ years }: ArchiveTimelineProps) {
             </a>
           ))}
         </nav>
-        <div className="ba-archive-switches">
+        <div className="ui-archive-switches">
           <button
             aria-pressed={!isCollapsedAll}
             onClick={() => setExpandedYears(new Set(allYearKeys))}
@@ -220,61 +220,61 @@ export function ArchiveTimeline({ years }: ArchiveTimelineProps) {
           </button>
         </div>
       </aside>
-      <div className="ba-archive-years">
+      <div className="ui-archive-years">
         {years.map((year) => {
           const yearOpen = expandedYears.has(year.year)
           return (
-            <section key={year.year} id={`archive-year-${year.year}`} className="ba-archive-year">
+            <section key={year.year} id={`archive-year-${year.year}`} className="ui-archive-year">
               <button
-                className="ba-year-heading"
+                className="ui-year-heading"
                 onClick={() => toggleYear(year.year)}
                 aria-expanded={yearOpen}
                 aria-controls={`archive-months-${year.year}`}
               >
-                <span className="ba-year-number">{year.year}</span>
-                <span className="ba-year-count">{year.postCount} 篇记录</span>
-                <ChevronDown className={yearOpen ? '' : 'ba-chevron-closed'} size={22} />
+                <span className="ui-year-number">{year.year}</span>
+                <span className="ui-year-count">{year.postCount} 篇记录</span>
+                <ChevronDown className={yearOpen ? '' : 'ui-chevron-closed'} size={22} />
               </button>
               {yearOpen && (
-                <div id={`archive-months-${year.year}`} className="ba-archive-months">
+                <div id={`archive-months-${year.year}`} className="ui-archive-months">
                   {year.months.map((month) => {
                     const key = getMonthKey(year.year, month.month)
                     const monthOpen = expandedMonths.has(key)
                     const state = monthStates[key] ?? createInitialMonthState()
                     return (
-                      <div key={key} className="ba-archive-month">
+                      <div key={key} className="ui-archive-month">
                         <button
-                          className="ba-month-heading"
+                          className="ui-month-heading"
                           onClick={() => toggleMonth(year.year, month.month)}
                           aria-expanded={monthOpen}
                           aria-controls={`archive-entries-${key}`}
                         >
-                          <span className="ba-month-number">
+                          <span className="ui-month-number">
                             {String(month.month).padStart(2, '0')}
                             <small>月</small>
                           </span>
                           <span>{month.postCount} 篇</span>
-                          <ChevronDown size={18} className={monthOpen ? '' : 'ba-chevron-closed'} />
+                          <ChevronDown size={18} className={monthOpen ? '' : 'ui-chevron-closed'} />
                         </button>
                         {monthOpen && (
                           <div
                             id={`archive-entries-${key}`}
-                            className="ba-month-entries"
+                            className="ui-month-entries"
                             aria-busy={state.loading}
                           >
                             {state.loading && !state.loaded && (
-                              <p className="ba-archive-message" role="status">
-                                <TriangleLoader />
+                              <p className="ui-archive-message" role="status">
+                                <Spinner />
                                 正在加载文章…
                               </p>
                             )}
                             {state.loaded && !state.posts.length && (
-                              <p className="ba-archive-message">本月暂无文章</p>
+                              <p className="ui-archive-message">本月暂无文章</p>
                             )}
                             <ol>
                               {state.posts.map((post) => (
                                 <li key={post.id}>
-                                  <Link href={`/posts/${post.slug}`} className="ba-archive-entry">
+                                  <Link href={`/posts/${post.slug}`} className="ui-archive-entry">
                                     <time dateTime={post.publishedAt || undefined}>
                                       {post.publishedAt
                                         ? new Date(post.publishedAt)
@@ -292,13 +292,13 @@ export function ArchiveTimeline({ years }: ArchiveTimelineProps) {
                               ))}
                             </ol>
                             {state.error && (
-                              <p className="ba-archive-message ba-error" role="alert">
+                              <p className="ui-archive-message ui-error" role="alert">
                                 {state.error}
                               </p>
                             )}
                             {(state.error || (state.loaded && state.hasMore)) && (
                               <button
-                                className="ba-archive-more"
+                                className="ui-archive-more"
                                 disabled={state.loading}
                                 onClick={() =>
                                   void loadMonthPosts(

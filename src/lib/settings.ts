@@ -47,6 +47,8 @@ export const PUBLIC_SETTING_KEYS = [
   'ui.publicStylePreset',
   'ui.backgroundUrl',
   'ui.backgroundOverlay',
+  'ui.style',
+  'ui.allowStyleSwitch',
   'hero.typingTitles',
   'hero.subtitle',
   'hero.location',
@@ -140,8 +142,8 @@ export async function getPostPageSettings(): Promise<PostPageSettings> {
   return {
     commentsEnabled: (settings['comments.enabled'] as boolean | undefined) ?? true,
     allowGuest: (settings['comments.allowGuest'] as boolean | undefined) ?? false,
-    ownerName: (settings['site.ownerName'] as string | undefined) || '千叶',
+    ownerName: (settings['site.ownerName'] as string | undefined) || '',
     defaultAvatarUrl: (settings['site.defaultAvatarUrl'] as string | undefined) || '',
-    ownerRole: (settings['profile.role'] as string | undefined) || '全栈开发者',
+    ownerRole: (settings['profile.role'] as string | undefined) || '',
   }
 }

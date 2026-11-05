@@ -125,7 +125,7 @@ export function Mermaid({ content }: MermaidProps) {
     <Dialog>
       <DialogTrigger asChild>
         <div
-          className="ba-mermaid"
+          className="ui-mermaid"
           role="button"
           tabIndex={0}
           aria-label="放大图表"

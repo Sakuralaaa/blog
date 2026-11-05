@@ -1,6 +1,6 @@
 {
-  "name": "my-blog",
-  "version": "1.1.5-atoll.2",
+  "name": "blog",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "postinstall": "node scripts/prepare-db.mjs",
@@ -10,7 +10,6 @@
     "start": "next start",
     "lint": "eslint",
     "db:prepare": "node scripts/prepare-db.mjs",
-    "artwork:prepare": "node scripts/prepare-artwork.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "test": "node --import tsx --test tests/*.test.ts tests/*.test.mjs",
     "typecheck": "tsc --noEmit",

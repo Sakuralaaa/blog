@@ -118,8 +118,8 @@ export async function sendGotifyTestNotification(input: GotifyTestNotificationIn
     throw new GotifyServiceError(`Gotify 配置不完整（缺少 ${missing.join(' / ')}）`, 400)
   }
 
-  const title = input.title?.trim() || '测试推送 - 执笔为剑'
-  const message = input.message?.trim() || '这是一条来自 执笔为剑 的 Gotify 测试通知'
+  const title = input.title?.trim() || '测试推送'
+  const message = input.message?.trim() || '这是一条 Gotify 测试通知'
   const priority = Number.isFinite(input.priority) ? Number(input.priority) : 5
 
   await sendGotifyNotification({

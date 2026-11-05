@@ -6,16 +6,18 @@ import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 
-test('standalone packaging preserves bootstrap dependencies and hero assets but excludes runtime uploads', async () => {
+test('standalone packaging preserves bootstrap dependencies and first-paint fonts but excludes runtime uploads', async () => {
   const script = path.resolve('scripts/prepare-standalone.mjs')
-  const dir = await mkdtemp(path.join(tmpdir(), 'papergrid-standalone-assets-'))
-  const assets = ['arona-touch-eyes.webp', 'arona-expressions.webp', 'blue-archive/arona-loading.webp',
-    'blue-archive/loading-desktop.webp', 'blue-archive/loading-mobile.webp', 'blue-archive/triangle-grid.webp']
+  const dir = await mkdtemp(path.join(tmpdir(), 'blog-standalone-assets-'))
+  const assets = ['fonts/inter-5.3.0/inter-latin-wght-normal.woff2',
+    'fonts/jetbrains-mono-5.3.0/jetbrains-mono-latin-wght-normal.woff2',
+    'fonts/noto-sans-sc-5.3.0/noto-sans-sc-latin-wght-normal.woff2',
+    'fonts/source-serif-4-5.3.1/source-serif-4-latin-wght-normal.woff2', 'logo.svg']
   try {
     await mkdir(path.join(dir, 'node_modules'), { recursive: true })
     await symlink(await realpath('node_modules/bcryptjs'), path.join(dir, 'node_modules/bcryptjs'), 'dir')
     for (const asset of assets) {
-      const file = path.join(dir, 'public/assets', asset)
+      const file = path.join(dir, 'public', asset)
       await mkdir(path.dirname(file), { recursive: true })
       await writeFile(file, asset)
     }
@@ -31,7 +33,7 @@ test('standalone packaging preserves bootstrap dependencies and hero assets but 
     await assert.rejects(access(path.join(dir, '.next/standalone/public/uploads')), { code: 'ENOENT' })
     assert.equal(await readFile(path.join(dir, 'public/uploads/secret.txt'), 'utf8'), 'synthetic fixture')
     for (const asset of assets) {
-      assert.equal(await readFile(path.join(dir, '.next/standalone/public/assets', asset), 'utf8'), asset)
+      assert.equal(await readFile(path.join(dir, '.next/standalone/public', asset), 'utf8'), asset)
     }
     await access(path.join(dir, '.next/standalone/.next/static/chunk.js'))
   } finally { await rm(dir, { recursive: true, force: true }) }

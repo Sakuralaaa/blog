@@ -13,7 +13,7 @@ export async function sendGotifyNotification(options: GotifyOptions) {
     url,
     token,
     title = '测试推送',
-    message = '这是来自 papergrid 的测试推送',
+    message = '这是一条测试推送',
     priority = 5,
     timeoutMs = 3000,
   } = options

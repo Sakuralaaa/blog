@@ -48,6 +48,9 @@ const nextConfig: NextConfig = {
   ],
   // Append the default value of mdx in webpack extensions
   pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+  async redirects() {
+    return [{ source: '/yaji', destination: '/projects', permanent: true }]
+  },
   async headers() {
     return [
       {

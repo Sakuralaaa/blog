@@ -60,9 +60,9 @@ export function AdminNav({
 }) {
   const pathname = usePathname()
   return (
-    <nav className="ba-admin-nav" aria-label="后台导航">
+    <nav className="admin-nav" aria-label="后台导航">
       {groups.map((group) => (
-        <div key={group.label} className="ba-admin-nav-group">
+        <div key={group.label} className="admin-nav-group">
           <p>{group.label}</p>
           {group.keys.map((href) => {
             const item = items.find((item) => item.href === href)

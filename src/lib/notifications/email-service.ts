@@ -181,11 +181,11 @@ async function sendNotificationMail(
   recipients?: string[]
 ): Promise<void> {
   const [siteTitleRaw, displayNameRaw, resolvedRecipients] = await Promise.all([
-    getSetting<string>('site.title', 'PaperGrid'),
+    getSetting<string>('site.title', '个人主页'),
     getSetting<string>('email.from', ''),
     recipients && recipients.length > 0 ? Promise.resolve(recipients) : resolveAdminRecipients(),
   ])
-  const siteTitle = (siteTitleRaw || 'PaperGrid').toString().trim() || 'PaperGrid'
+  const siteTitle = (siteTitleRaw || '个人主页').toString().trim() || '个人主页'
   const displayName = (displayNameRaw || '').toString().replace(/[\r\n]/g, ' ').trim() || siteTitle
   const fromAddress = resolveFromAddressFromSmtpUser()
   const from = `${displayName} <${fromAddress}>`
@@ -290,7 +290,7 @@ export async function sendEmailTestNotification(input: EmailTestNotificationInpu
     throw new EmailServiceError('邮件通知未启用', 400)
   }
 
-  const title = input.title?.trim() || '测试邮件 - 执笔为剑'
-  const message = input.message?.trim() || '这是一封来自 执笔为剑 的 SMTP 测试通知'
+  const title = input.title?.trim() || '测试邮件'
+  const message = input.message?.trim() || '这是一封 SMTP 测试通知'
   await sendNotificationMail(title, message)
 }

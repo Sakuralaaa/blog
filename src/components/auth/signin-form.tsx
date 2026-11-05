@@ -49,88 +49,59 @@ export function SignInForm({
   }
 
   return (
-    <div className="schale-signin">
-      <div className="schale-signin-panel space-y-7">
-        <Link href="/" className="text-primary text-sm">
-          ← 返回博客
+    <div className="auth-page">
+      <div className="card auth-card">
+        <Link href="/" className="text-link auth-card__back">
+          ← 返回首页
         </Link>
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white">
-            欢迎回来
-          </h1>
-        </div>
+        <h1>登录</h1>
 
-        {/* Credentials Form */}
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="auth-form">
           {error && (
-            <div
-              role="alert"
-              className="rounded-lg bg-red-50 p-4 text-sm text-red-800 dark:bg-red-900/20 dark:text-red-400"
-            >
+            <div role="alert" className="auth-form__error">
               {error}
             </div>
           )}
 
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                邮箱
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="username"
-                maxLength={254}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                placeholder="admin@example.com"
-              />
-            </div>
+          <label htmlFor="email">邮箱</label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="username"
+            maxLength={254}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="field"
+            placeholder="admin@example.com"
+          />
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-              >
-                密码
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                maxLength={72}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
-                placeholder="••••••••"
-              />
-            </div>
-          </div>
+          <label htmlFor="password">密码</label>
+          <input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            maxLength={72}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="field"
+            placeholder="••••••••"
+          />
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-lg bg-blue-600 px-4 py-3 text-base font-medium text-white transition-colors hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
-          >
-            {isLoading ? '登录中...' : '登录'}
+          <button type="submit" disabled={isLoading} className="btn btn--primary auth-form__submit">
+            {isLoading ? '登录中…' : '登录'}
           </button>
         </form>
 
         {(githubEnabled || googleEnabled) && (
-          <div className="space-y-3 border-t pt-6">
-            <p className="text-muted-foreground mb-3 text-center text-sm">使用其他账号登录</p>
+          <div className="auth-card__alt">
+            <p>使用其他账号登录</p>
             {githubEnabled && (
               <button
                 disabled={isLoading}
                 onClick={() => signIn('github', { callbackUrl: '/' })}
-                className="hover:bg-secondary flex w-full items-center justify-center gap-3 rounded-lg border p-3"
+                className="btn"
               >
                 <Github size={18} />
                 GitHub
@@ -140,7 +111,7 @@ export function SignInForm({
               <button
                 disabled={isLoading}
                 onClick={() => signIn('google', { callbackUrl: '/' })}
-                className="hover:bg-secondary flex w-full items-center justify-center gap-3 rounded-lg border p-3"
+                className="btn"
               >
                 <Mail size={18} />
                 Google
@@ -148,9 +119,6 @@ export function SignInForm({
             )}
           </div>
         )}
-        <p className="text-muted-foreground text-center text-xs tracking-widest">
-          PAPERGRID · 创作与记录
-        </p>
       </div>
     </div>
   )

@@ -5,6 +5,12 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.2.0', date: '2026-11-05', highlights: [
+    '前台重做为个人主页 + 作品集 + 博客：首页精选作品带封面，雅集改名作品（/projects）。',
+    '内置 Atoll、极简、杂志、柔和四套风格，各含亮暗两色；后台设默认，访客可切换。',
+    '移除角色立绘、加载动画与旧主题素材；紧凑页脚，修复中文伪斜体、暗色描边与移动端排版。',
+    'MCP 上传图片先校验权限并拦截内网地址，批量调用限 20 条。',
+  ] },
   { version: '1.1.5', date: '2026-09-08', highlights: [
     '修复 Cloudflare 环境下暗色加载界面先显示亮色的问题。',
   ] },

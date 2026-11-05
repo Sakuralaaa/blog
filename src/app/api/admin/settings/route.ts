@@ -1,3 +1,4 @@
+import { DEFAULT_SITE_STYLE, normalizeSiteStyle } from '@/lib/site-styles'
 import { RequestBodyError, bodyErrorResponse, readJsonBody } from '@/lib/request-body'
 import { NextRequest, NextResponse } from 'next/server'
 import { Prisma } from '@prisma/client'
@@ -27,6 +28,20 @@ type AutoCreateSettingConfig = {
 }
 
 const AUTO_CREATE_SETTINGS: Record<string, AutoCreateSettingConfig> = {
+  'ui.style': {
+    value: { value: DEFAULT_SITE_STYLE },
+    group: 'ui',
+    editable: true,
+    secret: false,
+    description: '前台默认风格',
+  },
+  'ui.allowStyleSwitch': {
+    value: { enabled: true },
+    group: 'ui',
+    editable: true,
+    secret: false,
+    description: '允许访客切换风格',
+  },
   'ui.backgroundUrl': {
     value: { url: '' },
     group: 'ui',
@@ -158,6 +173,16 @@ function normalizeSettingUpdateValue(key: string, value: Prisma.InputJsonValue):
     }
 
     return null
+  }
+
+  if (key === 'ui.style') {
+    return { value: normalizeSiteStyle(readStringValue(['value', 'style', 'text'])) }
+  }
+
+  if (key === 'ui.allowStyleSwitch') {
+    const record = value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {}
+    const raw = typeof value === 'boolean' ? value : record.enabled ?? record.value
+    return { enabled: raw !== false }
   }
 
   if (key === 'ui.publicStylePreset') {

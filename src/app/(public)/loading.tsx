@@ -1,13 +1,10 @@
-import { TriangleLoader } from '@/components/loading/triangle-loader'
-import styles from '@/components/loading/loading.module.css'
+import { Spinner } from '@/components/loading/spinner'
 
 export default function Loading() {
   return (
-    <div className={styles.route} role="status" data-route-loading>
-      <div className={styles.routeOverlay}>
-        <TriangleLoader />
-        <span>正在加载…</span>
-      </div>
+    <div className="route-loading" role="status" data-route-loading>
+      <Spinner />
+      <span>正在加载…</span>
     </div>
   )
 }

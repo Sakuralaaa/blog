@@ -62,18 +62,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const defaultAvatarUrl = (await getSetting<string>('site.defaultAvatarUrl', '')) || ''
 
   return (
-    <div className="schale-admin">
+    <div className="admin-shell">
       {/* Top Navigation Bar */}
-      <header className="schale-admin-header">
+      <header className="admin-header">
         <div className="flex h-full items-center justify-between gap-3">
           {/* 左侧入口 */}
           <div className="flex items-center gap-4">
             <AdminMobileSidebar items={navItems} />
-            <Link href="/admin" className="schale-brand">
-              <span className="schale-mark">
-                <Circle />
+            <Link href="/admin" className="admin-brand">
+              <span className="admin-brand__mark" aria-hidden="true">
+                <Circle size={14} strokeWidth={3} />
               </span>
-              <span className="text-sm font-semibold tracking-tight sm:text-base">创作终端</span>
+              <span>管理后台</span>
             </Link>
           </div>
 
@@ -81,7 +81,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             href="/"
             className="text-muted-foreground ml-auto hidden items-center gap-2 text-sm sm:flex"
           >
-            <ExternalLink size={15} /> 查看博客
+            <ExternalLink size={15} /> 查看网站
           </Link>
           <ThemeToggle />
           {/* User Menu */}
@@ -142,17 +142,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       </header>
 
-      <div className="schale-admin-layout">
+      <div className="admin-layout">
         {/* Sidebar */}
-        <aside className="schale-admin-sidebar">
-          <div className="ba-sidebar-heading">
+        <aside className="admin-sidebar">
+          <div className="admin-sidebar-heading">
             <strong>创作与管理</strong>
           </div>
           <AdminNav items={navItems} />
         </aside>
 
         {/* Main Content */}
-        <main id="admin-content" className="schale-admin-main">
+        <main id="admin-content" className="admin-main">
           <Suspense fallback={<AdminLoadingFallback delayMs={150} />}>
             <AdminContentTransition>{children}</AdminContentTransition>
           </Suspense>

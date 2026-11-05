@@ -1,10 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { FolderOpen } from 'lucide-react'
 import Link from 'next/link'
-import { ArchiveHeading } from '@/components/layout/archive-heading'
+import { PageHeader } from '@/components/layout/page-header'
 
 export const revalidate = 60
 
@@ -42,65 +40,35 @@ export default async function CategoriesPage() {
   ])
 
   return (
-    <div className="ba-categories-page">
-      {/* 页面头部 */}
-      <ArchiveHeading
-        title="分类收藏"
-        description="从感兴趣的主题，开始阅读。"
+    <div className="page">
+      <PageHeader
+        eyebrow="Categories"
+        title="分类"
+        description={`共 ${categories.length} 个分类 · ${totalPosts} 篇文章`}
       />
-
-      {/* 主要内容区 */}
-      <section className="ba-archive-body">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              共{' '}
-              <span className="pg-public-stat-emphasis font-semibold text-gray-900 dark:text-white">
-                {categories.length}
-              </span>{' '}
-              个分类,
-              <span className="pg-public-stat-emphasis font-semibold text-gray-900 dark:text-white">
-                {totalPosts}
-              </span>{' '}
-              篇文章
-            </p>
+      <section className="container page-body">
+        {categories.length === 0 ? (
+          <div className="card empty-state">
+            <FolderOpen size={24} aria-hidden="true" />
+            <p>暂无分类</p>
           </div>
-
-          {categories.length === 0 ? (
-            <Card>
-              <CardContent className="flex min-h-[300px] flex-col items-center justify-center p-12 text-center">
-                <FolderOpen className="mb-4 h-16 w-16 text-gray-400" />
-                <p className="text-lg text-gray-500 dark:text-gray-400">暂无分类</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {categories.map((category) => (
-                <Link key={category.id} href={`/categories/${category.slug}`}>
-                  <Card className="cursor-pointer transition-shadow hover:shadow-lg">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-xl hover:text-blue-600 dark:hover:text-blue-400">
-                            {category.name}
-                          </CardTitle>
-                          {category.description && (
-                            <p className="mt-2 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
-                              {category.description}
-                            </p>
-                          )}
-                        </div>
-                        <Badge variant="secondary" className="pg-public-badge-secondary ml-2">
-                          {category._count.posts}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="cat-grid">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/categories/${category.slug}`}
+                className="card card--hover cat-card"
+              >
+                <span className="cat-card__name">{category.name}</span>
+                {category.description && (
+                  <span className="cat-card__desc">{category.description}</span>
+                )}
+                <span className="cat-card__count">{category._count.posts} 篇</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )

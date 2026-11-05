@@ -12,7 +12,9 @@
     "posts": "Posts",
     "categories": "Categories",
     "tags": "Tags",
-    "about": "About"
+    "about": "About",
+    "projects": "Projects",
+    "archive": "Archive"
   },
   "post": {
     "publishedAt": "Published",
@@ -29,5 +31,24 @@
     "comments": "Comments",
     "users": "Users",
     "settings": "Settings"
+  },
+  "style": {
+    "switcher": "Style",
+    "followSite": "Follow site default",
+    "atoll": "Atoll",
+    "minimal": "Minimal",
+    "editorial": "Editorial",
+    "soft": "Soft",
+    "adminTitle": "Site style",
+    "adminDescription": "Pick the default public style; every style has light and dark palettes.",
+    "allowSwitch": "Let visitors switch styles from the header"
+  },
+  "home": {
+    "viewProjects": "View work",
+    "readPosts": "Read posts",
+    "contact": "Contact",
+    "featuredProjects": "Featured work",
+    "latestPosts": "Latest posts",
+    "recentComments": "Recent comments"
   }
 }

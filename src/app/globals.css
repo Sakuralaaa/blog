@@ -1,11 +1,14 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './styles/fonts.css';
-@import './styles/schale.css';
-@import './styles/reading-ui.css';
+@import './styles/fonts-serif.css';
+@import './styles/tokens.css';
 @import './styles/scrollbars.css';
 @import './styles/image-preview.css';
-@import './styles/atoll.css';
+@import './styles/base.css';
+@import './styles/site.css';
+@import './styles/article.css';
+@import './styles/admin.css';
 @source '../../node_modules/streamdown/dist/*.js';
 @custom-variant dark (&:is(.dark *));
 @theme inline {
@@ -52,75 +55,6 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-:root {
-  --font-geist-sans:
-    'PaperGrid Rounded', 'Noto Sans SC Variable', 'PingFang SC', 'Microsoft YaHei', system-ui,
-    sans-serif;
-  --font-display: 'PaperGrid Rounded', 'Noto Sans SC Variable', sans-serif;
-  --font-reading: 'Noto Sans SC Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  --font-geist-mono: 'SFMono-Regular', Consolas, monospace;
-  --font-noto-serif: var(--font-geist-sans);
-  --radius: 0.85rem;
-  --background: #f2f7fb;
-  --foreground: #17324b;
-  --card: #ffffff;
-  --card-foreground: #17324b;
-  --popover: #ffffff;
-  --popover-foreground: #17324b;
-  --primary: #087cba;
-  --primary-foreground: #ffffff;
-  --secondary: #e9f5fc;
-  --secondary-foreground: #156185;
-  --muted: #edf3f8;
-  --muted-foreground: #60798d;
-  --accent: #e4f4fc;
-  --accent-foreground: #075985;
-  --destructive: #c83d55;
-  --border: #dce8f1;
-  --input: #d3e2ed;
-  --ring: #29a9e1;
-  --chart-1: #16a4de;
-  --chart-2: #3675bb;
-  --chart-3: #54bcb5;
-  --chart-4: #e3b860;
-  --chart-5: #899ed4;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #17324b;
-  --sidebar-primary: #087cba;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e9f5fc;
-  --sidebar-accent-foreground: #075985;
-  --sidebar-border: #dce8f1;
-  --sidebar-ring: #29a9e1;
-}
-.dark {
-  --background: #0d1929;
-  --foreground: #e0edf7;
-  --card: #132337;
-  --card-foreground: #e0edf7;
-  --popover: #16283c;
-  --popover-foreground: #e0edf7;
-  --primary: #61c9f4;
-  --primary-foreground: #082235;
-  --secondary: #1a354d;
-  --secondary-foreground: #a6e1fb;
-  --muted: #182b40;
-  --muted-foreground: #97b1c5;
-  --accent: #1b3c52;
-  --accent-foreground: #a6e1fb;
-  --destructive: #e47988;
-  --border: #263d52;
-  --input: #345068;
-  --ring: #61c9f4;
-  --sidebar: #101f31;
-  --sidebar-foreground: #e0edf7;
-  --sidebar-primary: #61c9f4;
-  --sidebar-primary-foreground: #082235;
-  --sidebar-accent: #1b3c52;
-  --sidebar-accent-foreground: #a6e1fb;
-  --sidebar-border: #263d52;
-  --sidebar-ring: #61c9f4;
-}
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -134,6 +68,7 @@
     @apply bg-background text-foreground;
     margin: 0;
     cursor: default;
+    font-family: var(--f-sans);
     font-size: 16px;
     line-height: 1.65;
   }
@@ -173,8 +108,8 @@
     outline-offset: 4px;
   }
   ::selection {
-    background: #9edff5;
-    color: #17324b;
+    background: var(--c-selection);
+    color: var(--c-text);
   }
 }
 /* Prism (rehype-prism-plus) - minimal theme */

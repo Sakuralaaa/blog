@@ -8,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
@@ -40,9 +39,9 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
   }
 
   return (
-    <div className="pg-post-filters space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row">
-        <div className="relative flex-1">
+    <div className="post-filters">
+      <div className="post-filters__row">
+        <div className="post-filters__search">
           <Input
             aria-label="搜索文章标题或内容"
             type="search"
@@ -56,16 +55,16 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger
             aria-label="文章分类"
-            className="pg-post-filter-select-trigger w-full sm:w-[180px]"
+            className="post-filters__select"
           >
             <SelectValue placeholder="选择分类" />
           </SelectTrigger>
-          <SelectContent className="pg-post-filter-select-content">
-            <SelectItem className="pg-post-filter-select-item" value="all">
+          <SelectContent>
+            <SelectItem value="all">
               全部分类
             </SelectItem>
             {categories.map((cat) => (
-              <SelectItem className="pg-post-filter-select-item" key={cat.slug} value={cat.slug}>
+              <SelectItem key={cat.slug} value={cat.slug}>
                 {cat.name} ({cat._count.posts})
               </SelectItem>
             ))}
@@ -75,46 +74,48 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
         <Select value={tag} onValueChange={setTag}>
           <SelectTrigger
             aria-label="文章标签"
-            className="pg-post-filter-select-trigger w-full sm:w-[180px]"
+            className="post-filters__select"
           >
             <SelectValue placeholder="选择标签" />
           </SelectTrigger>
-          <SelectContent className="pg-post-filter-select-content">
-            <SelectItem className="pg-post-filter-select-item" value="all">
+          <SelectContent>
+            <SelectItem value="all">
               全部标签
             </SelectItem>
             {tags.map((tag) => (
-              <SelectItem className="pg-post-filter-select-item" key={tag.slug} value={tag.slug}>
+              <SelectItem key={tag.slug} value={tag.slug}>
                 {tag.name} ({tag._count.posts})
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Button onClick={handleFilter}>筛选</Button>
+        <button type="button" className="btn btn--primary" onClick={handleFilter}>
+          筛选
+        </button>
       </div>
 
       {(category !== 'all' || tag !== 'all' || search) && (
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-600 dark:text-gray-400">当前筛选:</span>
+        <div className="post-filters__active">
+          <span>当前筛选：</span>
           {category !== 'all' && (
-            <span className="text-sm">
+            <span>
               分类: <strong>{categories.find((c) => c.slug === category)?.name}</strong>
             </span>
           )}
           {tag !== 'all' && (
-            <span className="text-sm">
+            <span>
               标签: <strong>{tags.find((t) => t.slug === tag)?.name}</strong>
             </span>
           )}
           {search && (
-            <span className="text-sm">
+            <span>
               搜索: <strong>{search}</strong>
             </span>
           )}
-          <Button variant="link" className="h-auto p-0 text-blue-600" onClick={handleClear}>
+          <button type="button" className="text-link" onClick={handleClear}>
             清除筛选
-          </Button>
+          </button>
         </div>
       )}
     </div>

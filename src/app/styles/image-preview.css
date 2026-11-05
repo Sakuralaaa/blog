@@ -5,7 +5,7 @@
   outline: 2px solid var(--ring);
   outline-offset: 4px;
 }
-.ba-image-preview-pending {
+.ui-image-preview-pending {
   position: fixed;
   z-index: 90;
   bottom: 24px;
@@ -18,7 +18,7 @@
   box-shadow: 0 4px 24px #18365320;
   pointer-events: none;
 }
-.ba-image-viewer[data-slot='dialog-content'] {
+.ui-image-viewer[data-slot='dialog-content'] {
   position: fixed;
   z-index: 80;
   inset: 0;
@@ -35,14 +35,14 @@
   translate: none;
   background: #102332f5;
   color: #edf7fd;
-  animation: ba-image-enter 160ms ease;
+  animation: ui-image-enter 160ms ease;
 }
-.ba-image-slide {
+.ui-image-slide {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
-.ba-image-toolbar {
+.ui-image-toolbar {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -50,7 +50,7 @@
   padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 12px
     max(16px, env(safe-area-inset-left));
 }
-.ba-image-caption {
+.ui-image-caption {
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -59,20 +59,20 @@
   font-size: 15px;
   font-weight: 500;
 }
-.ba-image-actions {
+.ui-image-actions {
   display: flex;
   flex: none;
   gap: 2px;
 }
-.ba-image-viewer [data-slot='button'] {
+.ui-image-viewer [data-slot='button'] {
   width: 44px;
   height: 44px;
   color: inherit;
 }
-.ba-image-viewer [data-slot='button']:hover:not(:disabled) {
+.ui-image-viewer [data-slot='button']:hover:not(:disabled) {
   background: #d6efff14;
 }
-.ba-image-viewport {
+.ui-image-viewport {
   position: relative;
   display: flex;
   flex: 1;
@@ -83,18 +83,18 @@
   touch-action: pan-x pan-y pinch-zoom;
   scrollbar-width: none !important;
 }
-.ba-image-viewport::-webkit-scrollbar {
+.ui-image-viewport::-webkit-scrollbar {
   display: none;
   width: 0;
   height: 0;
 }
-.ba-image-viewport[data-zoomed='true'] {
+.ui-image-viewport[data-zoomed='true'] {
   cursor: grab;
 }
-.ba-image-viewport[data-zoomed='true']:active {
+.ui-image-viewport[data-zoomed='true']:active {
   cursor: grabbing;
 }
-.ba-image-original {
+.ui-image-original {
   display: block;
   flex: none;
   max-width: none;
@@ -103,7 +103,7 @@
   object-fit: contain;
   user-select: none;
 }
-.ba-image-message {
+.ui-image-message {
   position: absolute;
   inset: 0;
   display: grid;
@@ -112,7 +112,7 @@
   color: #b1c9da;
   pointer-events: none;
 }
-.ba-image-footer {
+.ui-image-footer {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -120,18 +120,18 @@
   flex: none;
   padding: 8px 16px max(12px, env(safe-area-inset-bottom));
 }
-.ba-image-footer > span {
+.ui-image-footer > span {
   min-width: 88px;
   text-align: center;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
-.ba-image-footer small {
+.ui-image-footer small {
   display: block;
   color: #a7c2d5;
   font-size: 12px;
 }
-@keyframes ba-image-enter {
+@keyframes ui-image-enter {
   from {
     opacity: 0;
   }
@@ -140,7 +140,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ba-image-viewer[data-slot='dialog-content'] {
+  .ui-image-viewer[data-slot='dialog-content'] {
     animation: none;
   }
 }

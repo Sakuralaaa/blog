@@ -1,8 +1,7 @@
 services:
   app:
-
-    image: ghcr.io/xywml/papergrid:latest
-    container_name: papergrid
+    image: ghcr.io/sakuralaaa/blog:latest
+    container_name: blog
     ports:
       - "127.0.0.1:6066:3000"
     environment:
@@ -38,7 +37,7 @@ services:
       NEXT_CACHE_DIR: "/data/.next-cache"
       MEDIA_ROOT: "/data/uploads"
     volumes:
-      - papergrid_data:/data
+      - blog_data:/data
     logging:
       driver: "local"
       options:
@@ -47,4 +46,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  papergrid_data:
+  blog_data:

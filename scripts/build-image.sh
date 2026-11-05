@@ -9,7 +9,7 @@ if [[ -z "${VERSION}" ]]; then
   exit 1
 fi
 
-IMAGE="${IMAGE:-ghcr.io/xywml/papergrid}"
+IMAGE="${IMAGE:-ghcr.io/sakuralaaa/blog}"
 TAG_VERSION="${VERSION}"
 if [[ "${TAG_VERSION}" != v* ]]; then
   TAG_VERSION="v${TAG_VERSION}"

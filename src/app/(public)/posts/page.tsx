@@ -1,11 +1,10 @@
 import { JournalCard } from '@/components/posts/journal-card'
-import { ArchiveHeading } from '@/components/layout/archive-heading'
+import { PageHeader } from '@/components/layout/page-header'
+import { PageLinks } from '@/components/posts/page-links'
 import { pageNumber, pageSize as boundedPageSize } from '@/lib/pagination'
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
 import type { Metadata } from 'next'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PostFilters } from '@/components/posts/post-filters'
 import { getSetting } from '@/lib/settings'
@@ -39,7 +38,7 @@ export async function generateMetadata({ searchParams }: PostsPageProps): Promis
   const hasNonPaginationFilter = Boolean(search || category || tag)
   return {
     title: '文章列表',
-    description: '浏览所有已发布的技术文章、生活记录和作品展示。',
+    description: '浏览所有已发布的文章。',
     alternates: {
       canonical,
     },
@@ -180,64 +179,44 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     }),
   ])
 
-  // 计算总页数
   const totalPages = Math.ceil(totalPosts / pageSize)
+  const filtered = Boolean(search || categorySlug || tagSlug)
 
-  const pages = Array.from(
-    { length: Math.min(totalPages, 5) },
-    (_, index) => Math.max(1, Math.min(page - 2, totalPages - 4)) + index
-  )
-  const href = (target: number) => ({
-    pathname: '/posts',
-    query: { ...params, page: String(target) },
-  })
   return (
-    <div className="ba-archive-page">
-      <ArchiveHeading title="文章手记" />
-      <section className="ba-container ba-archive-body">
-        <div className="ba-filter-panel">
-          <Suspense fallback={<div className="bg-muted h-12 animate-pulse" />}>
+    <div className="page">
+      <PageHeader
+        eyebrow="Writing"
+        title="文章"
+        description={`共 ${totalPosts} 篇${filtered ? '符合条件的' : ''}文章${
+          totalPages > 1 ? ` · 第 ${page} / ${totalPages} 页` : ''
+        }`}
+      />
+      <section className="container page-body">
+        <div className="filter-bar">
+          <Suspense fallback={<div className="filter-bar__skeleton" />}>
             <PostFilters key={JSON.stringify(params)} categories={categories} tags={tags} />
           </Suspense>
         </div>
-        <p className="ba-results-count" aria-live="polite">
-          找到 {totalPosts} 篇文章{totalPosts > pageSize && ` · 第 ${page} / ${totalPages} 页`}
-        </p>
         {posts.length === 0 ? (
-          <Card>
-            <CardContent className="py-16 text-center">
-              <p>没有找到相关文章</p>
-              <Button asChild variant="outline" className="mt-5">
-                <Link href="/posts">清除筛选条件</Link>
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="card empty-state">
+            <p>没有找到相关文章</p>
+            <Link href="/posts" className="btn btn--sm">
+              清除筛选条件
+            </Link>
+          </div>
         ) : (
-          <div className="ba-post-grid">
+          <div className="post-grid">
             {posts.map((post) => (
               <JournalCard key={post.id} post={post} />
             ))}
           </div>
         )}
-        {totalPages > 1 && (
-          <nav className="ba-pagination" aria-label="文章分页">
-            {page > 1 && (
-              <Link href={href(page - 1)} aria-label="上一页">
-                ←
-              </Link>
-            )}
-            {pages.map((n) => (
-              <Link key={n} href={href(n)} aria-current={n === page ? 'page' : undefined}>
-                {n}
-              </Link>
-            ))}
-            {page < totalPages && (
-              <Link href={href(page + 1)} aria-label="下一页">
-                →
-              </Link>
-            )}
-          </nav>
-        )}
+        <PageLinks
+          page={page}
+          totalPages={totalPages}
+          pathname="/posts"
+          query={{ search: params.search, category: params.category, tag: params.tag }}
+        />
       </section>
     </div>
   )

@@ -15,11 +15,11 @@ export function AdminMobileSidebar({
       <NavigationDrawer
         open={open}
         onOpenChange={setOpen}
-        title="创作终端"
+        title="管理后台"
         description="写作、整理与管理。"
         trigger={
-          <button className="ba-icon-button" aria-label="打开侧栏">
-            <Menu size={22} />
+          <button className="icon-btn" aria-label="打开侧栏">
+            <Menu size={18} />
           </button>
         }
       >

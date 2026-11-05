@@ -6,13 +6,12 @@ import { Toaster } from '@/components/ui/toaster'
 import { getSetting } from '@/lib/settings'
 import { getSiteUrl } from '@/lib/seo'
 import { ScrollProgress } from '@/components/layout/scroll-progress'
+import { DEFAULT_SITE_STYLE, buildStyleBootScript, normalizeSiteStyle } from '@/lib/site-styles'
 
 export async function generateMetadata(): Promise<Metadata> {
-  const title = (await getSetting<string>('site.title', '执笔为剑')) || '执笔为剑'
-  const description = await getSetting<string>(
-    'site.description',
-    '分享技术文章、生活记录和作品展示的个人博客'
-  )
+  const title = (await getSetting<string>('site.title', '个人主页')) || '个人主页'
+  const description =
+    (await getSetting<string>('site.description', '作品、项目与文章')) || '作品、项目与文章'
   const faviconUrl = (await getSetting<string>('site.faviconUrl', '')) || ''
   const metadataBase = getSiteUrl()
 
@@ -55,10 +54,29 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const theme = await getSetting<string>('site.defaultTheme', 'system')
+  const [theme, styleSetting, allowStyleSwitch] = await Promise.all([
+    getSetting<string>('site.defaultTheme', 'system'),
+    getSetting<string>('ui.style', DEFAULT_SITE_STYLE),
+    getSetting<boolean>('ui.allowStyleSwitch', true),
+  ])
+  const siteStyle = normalizeSiteStyle(styleSetting)
   return (
-    <html lang="zh" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body id="papergrid-page" className="font-sans antialiased">
+    <html
+      lang="zh"
+      data-scroll-behavior="smooth"
+      data-style={siteStyle}
+      data-style-default={siteStyle}
+      data-style-switch={allowStyleSwitch === false ? '0' : '1'}
+      suppressHydrationWarning
+    >
+      <head>
+        <script
+          data-cfasync="false"
+          // Applies the visitor's stored style before first paint (see site-styles.ts).
+          dangerouslySetInnerHTML={{ __html: buildStyleBootScript() }}
+        />
+      </head>
+      <body id="site-page" className="font-sans antialiased">
         <SessionProvider>
           <ThemeProvider
             attribute="class"

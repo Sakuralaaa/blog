@@ -170,7 +170,7 @@ export default function AdminWorksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">作品展示</h1>
-          <p className="text-muted-foreground">管理雅集页面中展示的项目作品</p>
+          <p className="text-muted-foreground">管理「作品」页面中展示的项目</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -255,14 +255,14 @@ export default function AdminWorksPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingProject ? '编辑作品' : '新增作品'}</DialogTitle>
-            <DialogDescription>填写项目名称、链接与简介，展示到雅集页面。</DialogDescription>
+            <DialogDescription>填写项目名称、链接、简介与封面图，展示到「作品」页面和首页。</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="project-name">项目名称</Label>
               <Input
                 id="project-name"
-                placeholder="例如：执笔为剑·博客"
+                placeholder="例如：个人作品集网站"
                 value={formData.name}
                 onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               />

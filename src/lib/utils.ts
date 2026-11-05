@@ -14,3 +14,11 @@ export function isValidHref(href: string | undefined): boolean {
     return false
   }
 }
+
+/** Accept absolute http(s) URLs, site-relative paths and inline data images. */
+export function isSafeImageSrc(src: string | null | undefined): src is string {
+  if (!src || typeof src !== 'string') return false
+  const value = src.trim()
+  if (/^data:image\/(png|jpe?g|gif|webp|avif|svg\+xml);/i.test(value)) return true
+  return /^(https?:\/\/|\/(?!\/))[^\s"'<>]+$/i.test(value)
+}

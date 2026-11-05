@@ -35,13 +35,13 @@ export function SearchTrigger() {
   return (
     <>
       <button
-        className="ba-search-trigger"
+        className="search-trigger"
         aria-label="搜索文章、分类和标签"
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <Search size={19} />
+        <Search size={17} />
         <span>搜索</span>
         <kbd>{shortcut}</kbd>
       </button>

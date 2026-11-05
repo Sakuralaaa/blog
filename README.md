@@ -1,35 +1,11 @@
-> [!NOTE]
-> 这是 [xywml/PaperGrid](https://github.com/xywml/PaperGrid) 的改版（MIT），用于 [Atoll](https://github.com/Sakuralaaa/Atoll) 一键应用模板。镜像：`ghcr.io/sakuralaaa/blog:latest`。
->
-> 改动：
-> - Atoll 风格界面：米色纸面、粗描边、硬阴影、点阵底，首页去掉立绘
-> - 自定义背景：后台「样式管理」可设背景图和遮罩深浅
-> - MCP 端点 `POST /api/mcp`：Claude Code、Codex 等 Agent 用后台生成的 API Key 写文章、传图、管理分类标签和「雅集」作品（新文章默认草稿）
-> - 新增 `/api/plugin/projects` 及权限 `PROJECT_READ` / `PROJECT_WRITE`
->
-> 接入 Claude Code：`claude mcp add --transport http blog https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`
-
 <div align="center">
-  <a name="readme-top"></a>
-  <img src="./public/logo.svg" alt="PaperGrid 蓝色光环图标" width="96" height="96" />
-  <h1>PaperGrid - 执笔为剑</h1>
-  <p>
-    一个基于 Next.js App Router 的轻量化个人博客与后台管理系统。<br/>
-    内置认证、文章管理、评论与系统设置，支持中文/英文与深色模式。
-  </p>
-  <p>
-    <a href="https://github.com/xywml/PaperGrid/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/xywml/PaperGrid?style=for-the-badge&logo=github" /></a>
-    <a href="https://github.com/xywml/PaperGrid/forks"><img alt="GitHub forks" src="https://img.shields.io/github/forks/xywml/PaperGrid?style=for-the-badge&logo=github" /></a>
-    <a href="https://github.com/xywml/PaperGrid/tags"><img alt="Version (from tag)" src="https://img.shields.io/github/v/tag/xywml/PaperGrid?style=for-the-badge&logo=github&label=version&sort=semver" /></a>
-    <br/>
-    <a href="https://github.com/xywml/PaperGrid/issues"><img alt="GitHub issues" src="https://img.shields.io/github/issues/xywml/PaperGrid?style=for-the-badge&logo=github" /></a>
-    <a href="https://github.com/xywml/PaperGrid/blob/main/LICENSE"><img alt="GitHub license" src="https://img.shields.io/github/license/xywml/PaperGrid?style=for-the-badge" /></a>
-    <a href="https://github.com/xywml/PaperGrid/pkgs/container/papergrid"><img alt="GHCR image" src="https://img.shields.io/badge/GHCR-ghcr.io%2Fxywml%2Fpapergrid-2f81f7?style=for-the-badge&logo=github" /></a>
-  </p>
-
+  <img src="./public/logo.svg" alt="blog" width="88" height="88" />
+  <h1>blog</h1>
+  <p>个人主页、作品集与博客，一个容器跑起来。<br/>内置后台、评论、搜索、MCP 写作接口，四套可切换的界面风格。</p>
+  <p><code>ghcr.io/sakuralaaa/blog:latest</code> · <a href="https://github.com/Sakuralaaa/Atoll">Atoll</a> 一键应用模板</p>
 </div>
 
-> 新版 UI 已调整为 Blue Archive（蔚蓝档案）风格；如果不适应新界面，可以回退到此前的版本。
+> 基于 [xywml/PaperGrid](https://github.com/xywml/PaperGrid)（MIT）重做：去掉原有的角色立绘与主题素材，前台按“个人主页 + 作品 + 文章”重新设计。
 
 ## 主要特性
 
@@ -39,8 +15,11 @@
 - 管理后台（文章、标签、分类、评论、用户、系统设置、文件管理）
 - 文件管理（图片与 PDF / ZIP 附件、受保护文件鉴权、分页、预览、删除、URL 回填）
 - MDX 内容支持、代码高亮、数学公式与图表
-- 国际化与深色模式
-- 统一的 Schale 蓝白界面：前台、阅读页和后台共用设计系统，支持深色模式与减少动态效果偏好
+- 深色模式；四套内置风格（Atoll 纸面、极简、杂志、柔和），后台设默认，访客可在导航栏切换
+- 首页：个人介绍、精选作品（带封面）、最新文章；作品页 `/projects`（旧 `/yaji` 自动跳转）
+- 自定义背景：后台「样式管理」可设背景图和遮罩深浅
+- MCP 端点 `POST /api/mcp`：Claude Code、Codex 等 Agent 用后台生成的 API Key 写文章、传图、管理分类标签和作品（新文章默认草稿）。接入：`claude mcp add --transport http blog https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`
+- `/api/plugin/projects` 及权限 `PROJECT_READ` / `PROJECT_WRITE`
 
 ## 快速开始
 
@@ -49,7 +28,7 @@
 1. 准备目录：
 
 ```bash
-mkdir -p ~/papergrid && cd ~/papergrid
+mkdir -p ~/blog && cd ~/blog
 ```
 
 2. 创建 `docker-compose.yml`（内容如下，与当前镜像运行配置一致）：
@@ -58,8 +37,8 @@ mkdir -p ~/papergrid && cd ~/papergrid
 services:
   app:
 
-    image: ghcr.io/xywml/papergrid:latest
-    container_name: papergrid
+    image: ghcr.io/sakuralaaa/blog:latest
+    container_name: blog
     ports:
       - "127.0.0.1:6066:3000"
     environment:
@@ -95,7 +74,7 @@ services:
       NEXT_CACHE_DIR: "/data/.next-cache"
       MEDIA_ROOT: "/data/uploads"
     volumes:
-      - papergrid_data:/data
+      - blog_data:/data
     logging:
       driver: "local"
       options:
@@ -104,7 +83,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  papergrid_data:
+  blog_data:
 ```
 
 3. 首次启动：
@@ -116,7 +95,7 @@ docker compose pull && docker compose up -d
 4. 更新到最新镜像：
 
 ```bash
-cd ~/papergrid && docker compose pull && docker compose up -d
+cd ~/blog && docker compose pull && docker compose up -d
 ```
 
 初始管理员邮箱默认为 `admin@example.com`。首次启动生成随机密码，保存在数据卷 `/data/initial-admin.txt`；本地开发保存在 `.local/initial-admin.txt`。也可通过 `ADMIN_INIT_PASSWORD` 提供 12–72 字节的初始密码。
@@ -436,7 +415,7 @@ src/
 │   ├── posts/          # 文章页面
 │   ├── tags/           # 标签页面
 │   ├── about/          # 关于页
-│   └── yaji/           # 项目/作品页
+│   └── (public)/projects/ # 作品页
 ├── components/         # 组件
 ├── hooks/              # 自定义 Hooks
 ├── i18n/               # 国际化
@@ -448,11 +427,6 @@ Dockerfile              # 镜像构建
 next.config.ts
 package.json
 ```
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=xywml/PaperGrid&type=date&legend=top-left)](https://www.star-history.com/#xywml/PaperGrid&type=date&legend=top-left)
-
 
 ## 升级
 

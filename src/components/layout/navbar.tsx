@@ -2,13 +2,12 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { useReadingState } from './reading-context'
-import { ArchiveTitle } from '@/components/brand/archive-title'
 import { MobileNav } from './mobile-nav'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { LogIn, LogOut, Settings, Circle, UserRound } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { LogIn, LogOut, Settings, UserRound } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme/theme-toggle'
+import { StyleSwitcher } from '@/components/theme/style-switcher'
 import { SearchTrigger } from '@/components/search/search-trigger'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -18,14 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-
-const links = [
-  { href: '/', label: '首页' },
-  { href: '/posts', label: '文章' },
-  { href: '/archive', label: '归档' },
-  { href: '/yaji', label: '雅集' },
-  { href: '/about', label: '关于' },
-]
+import { SITE_NAV_LINKS, isActivePath } from '@/lib/site-nav'
+import { isSafeImageSrc } from '@/lib/utils'
 
 export function Navbar({ settings = {} }: { settings?: Record<string, unknown> }) {
   const pathname = usePathname()
@@ -33,100 +26,88 @@ export function Navbar({ settings = {} }: { settings?: Record<string, unknown> }
   const [focused, setFocused] = useState(false)
   const reading = Boolean(post) && showTitle && !focused
   const { data: session, status } = useSession()
-  const title = typeof settings['site.title'] === 'string' ? settings['site.title'] : 'PaperGrid'
+  const allowStyleSwitch = settings['ui.allowStyleSwitch'] !== false
+  const title =
+    (typeof settings['site.title'] === 'string' && settings['site.title'].trim()) || '个人主页'
+  const logoRaw = typeof settings['site.logoUrl'] === 'string' ? settings['site.logoUrl'].trim() : ''
+  const logo = isSafeImageSrc(logoRaw) ? logoRaw : ''
   return (
     <header
-      className="schale-navbar"
-      data-home={pathname === '/'}
+      className="site-header"
       data-reading={reading}
       onFocusCapture={(event) => setFocused(event.target.matches(':focus-visible'))}
       onBlurCapture={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false)
       }}
     >
-      <div className="ba-nav-stage">
-        <div className="schale-nav-inner">
-          <MobileNav />
-          <Link href="/" className="schale-brand schale-brand-logo" aria-label={`${title} 首页`}>
-            <span className="schale-mark" aria-hidden="true">
-              <Circle strokeWidth={2} />
-            </span>
-            <ArchiveTitle title={title} compact />
-          </Link>
-          <nav className="schale-nav-links" aria-label="主导航">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={
-                  (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href))
-                    ? 'page'
-                    : undefined
-                }
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-            <div>
-              <SearchTrigger />
-            </div>
-            <ThemeToggle />
-            {!settings['ui.hideAdminEntry'] && (
-              <div className="ba-account-slot">
-                {session?.user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" aria-label="账号菜单">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={session.user.image || undefined} />
-                          <AvatarFallback>{session.user.name?.[0] || '我'}</AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      {session.user.role === 'ADMIN' && (
+      <div className="site-header__inner">
+        <MobileNav allowStyleSwitch={allowStyleSwitch} />
+        <Link href="/" className="site-brand" aria-label={`${title} 首页`}>
+          <span className="site-brand__mark" aria-hidden="true">
+            {logo ? <img src={logo} alt="" /> : Array.from(title)[0]}
+          </span>
+          <span className="site-brand__name">{title}</span>
+        </Link>
+        <nav className="site-nav" aria-label="主导航">
+          {SITE_NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActivePath(pathname, link.href) ? 'page' : undefined}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="site-header__actions">
+          <SearchTrigger />
+          {allowStyleSwitch && <StyleSwitcher />}
+          <ThemeToggle />
+          {!settings['ui.hideAdminEntry'] && (
+            <div className="site-account">
+              {session?.user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="icon-btn" aria-label="账号菜单">
+                      <Avatar className="site-account__avatar">
+                        <AvatarImage src={session.user.image || undefined} />
+                        <AvatarFallback>{session.user.name?.[0] || '我'}</AvatarFallback>
+                      </Avatar>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {session.user.role === 'ADMIN' && (
+                      <>
                         <DropdownMenuItem asChild>
                           <Link href="/admin">
                             <Settings className="mr-2 h-4 w-4" />
                             管理后台
                           </Link>
                         </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={() => void signOut({ callbackUrl: '/' })}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        退出登录
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : status === 'loading' ? (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled
-                    aria-label="正在加载账号"
-                    aria-busy="true"
-                  >
-                    <UserRound className="h-4 w-4" aria-hidden="true" />
-                  </Button>
-                ) : (
-                  <Button asChild variant="ghost" size="icon">
-                    <Link href="/auth/signin" aria-label="登录">
-                      <LogIn className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem onSelect={() => void signOut({ callbackUrl: '/' })}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      退出登录
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : status === 'loading' ? (
+                <button className="icon-btn" disabled aria-label="正在加载账号" aria-busy="true">
+                  <UserRound size={18} aria-hidden="true" />
+                </button>
+              ) : (
+                <Link href="/auth/signin" className="icon-btn" aria-label="登录">
+                  <LogIn size={18} />
+                </Link>
+              )}
+            </div>
+          )}
         </div>
-        <div className="ba-reading-status" aria-hidden={!reading}>
-          <span className="ba-reading-title" title={post?.title}>
-            {post?.title}
-          </span>
-        </div>
+      </div>
+      <div className="site-header__reading" aria-hidden={!reading}>
+        <span title={post?.title}>{post?.title}</span>
       </div>
     </header>
   )

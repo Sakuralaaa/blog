@@ -10,7 +10,7 @@ export function CodeCopyButton() {
   return (
     <button
       type="button"
-      className="flex items-center rounded-md p-1 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+      className="code-copy"
       title={copied ? '已复制' : '复制代码'}
       onClick={async (e) => {
         const root = e.currentTarget.closest('[data-code-block]')
@@ -29,9 +29,9 @@ export function CodeCopyButton() {
       }}
     >
       {copied ? (
-        <Check className="h-3.5 w-3.5 text-green-500" />
+        <Check size={14} />
       ) : (
-        <Copy className="h-3.5 w-3.5 text-gray-400" />
+        <Copy size={14} />
       )}
     </button>
   )

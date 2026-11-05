@@ -250,7 +250,7 @@ try {
  assert.ok(sitemapLocations.includes('/'), 'sitemap must include the configured site root')
  assert.ok(sitemapLocations.includes(`/posts/${publicPost.slug}`), 'sitemap must include newly published public posts')
  assert.ok(!sitemap.text.includes(`/posts/${secretPost.slug}</loc>`), 'sitemap must omit protected posts')
- for(const route of ['/','/posts','/archive','/categories','/tags','/about','/yaji','/auth/signin','/admin','/admin/posts','/admin/posts/new','/admin/files','/admin/works','/admin/categories','/admin/tags','/admin/comments','/admin/users','/admin/api-keys','/admin/ai','/admin/import-export','/admin/styles','/admin/settings']) {
+ for(const route of ['/','/posts','/archive','/categories','/tags','/about','/projects','/auth/signin','/admin','/admin/posts','/admin/posts/new','/admin/files','/admin/works','/admin/categories','/admin/tags','/admin/comments','/admin/users','/admin/api-keys','/admin/ai','/admin/import-export','/admin/styles','/admin/settings']) {
   const page = await req(route,{expected:route === '/admin/posts/new' ? [200,307] : 200}); assert.ok(!page.text.includes('Application error:'),`${route} rendering error`)
  }
  const form = new FormData();form.set('type','backup_export')

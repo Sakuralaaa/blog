@@ -4,13 +4,14 @@ import { zhCN } from 'date-fns/locale'
 import { prisma } from '@/lib/prisma'
 import { getSetting } from '@/lib/settings'
 
-export async function RecentCommentsTimeline({ limit = 5 }: { limit?: number } = {}) {
+/** Home "recent comments" section; renders nothing when there is nothing to show. */
+export async function RecentCommentsTimeline({ limit = 4 }: { limit?: number } = {}) {
   const commentsEnabled = (await getSetting<boolean>('comments.enabled', true)) ?? true
   if (!commentsEnabled) return null
 
-  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 10) : 5
+  const safeLimit = Number.isFinite(limit) ? Math.min(Math.max(limit, 1), 10) : 4
   const comments = await prisma.comment.findMany({
-    where: { status: 'APPROVED', post: { isProtected: false } },
+    where: { status: 'APPROVED', post: { isProtected: false, status: 'PUBLISHED' } },
     orderBy: { createdAt: 'desc' },
     take: safeLimit,
     select: {
@@ -23,42 +24,37 @@ export async function RecentCommentsTimeline({ limit = 5 }: { limit?: number } =
     },
   })
 
-  if (comments.length === 0) {
-    return (
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        暂无最新评论
-      </p>
-    )
-  }
+  if (comments.length === 0) return null
 
   return (
-    <div className="relative pl-4">
-      <div className="absolute left-1 top-1 bottom-1 w-px bg-gray-200 dark:bg-gray-700" />
-      <div className="space-y-4">
+    <section className="home-section container" aria-labelledby="recent-comments-title">
+      <header className="section-head">
+        <h2 id="recent-comments-title">最新评论</h2>
+      </header>
+      <ul className="comment-feed">
         {comments.map((comment) => {
           const author = comment.author?.name || comment.authorName || '匿名用户'
-          const summary = comment.content.length > 60 ? `${comment.content.slice(0, 60)}…` : comment.content
+          const summary =
+            comment.content.length > 80 ? `${comment.content.slice(0, 80)}…` : comment.content
           return (
-            <div key={comment.id} className="relative">
-              <span className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gray-900 dark:bg-white" />
-              <div className="pl-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: zhCN })} · {author}
-                </p>
-                <Link
-                  href={`/posts/${comment.post.slug}`}
-                  className="block text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
-                >
-                  {comment.post.title}
-                </Link>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {summary}
-                </p>
-              </div>
-            </div>
+            <li key={comment.id} className="card comment-feed__item">
+              <p className="comment-feed__meta">
+                <strong>{author}</strong>
+                <span>
+                  {formatDistanceToNow(new Date(comment.createdAt), {
+                    addSuffix: true,
+                    locale: zhCN,
+                  })}
+                </span>
+              </p>
+              <p className="comment-feed__text">{summary}</p>
+              <Link href={`/posts/${comment.post.slug}`} className="comment-feed__post">
+                {comment.post.title}
+              </Link>
+            </li>
           )
         })}
-      </div>
-    </div>
+      </ul>
+    </section>
   )
 }

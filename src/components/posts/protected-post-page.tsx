@@ -1,32 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import {
-  Calendar,
-  Clock,
-  Eye,
-  User,
-  ArrowLeft,
-  ArrowRight,
-  Edit3,
-  Scissors,
-  Lock,
-} from 'lucide-react'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { TableOfContents, type HeadingItem } from '@/components/posts/table-of-contents'
+import { type HeadingItem } from '@/components/posts/table-of-contents'
+import { ArticleLayout } from '@/components/posts/article-layout'
 import { CommentSection } from '@/components/comments/comment-section'
 import { PostTitleSync } from '@/components/posts/post-title-sync'
 import { PostPasswordGate } from '@/components/posts/post-password-gate'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ViewCount } from '@/components/posts/view-count'
-import { RelatedPostsList } from '@/components/posts/related-posts-list'
-import { extractHeadingsFromMarkdown } from '@/lib/markdown'
-import { getReadingContentClasses } from '@/lib/reading-style'
+import { extractHeadingsFromMarkdown, stripLeadingTitle } from '@/lib/markdown'
 import { MDXContentClient } from '@/components/posts/mdx-content-client'
-import { isInternalImageUrl } from '@/lib/image-url'
 
 const UNLOCK_STORAGE_PREFIX = 'pg_post_unlock_'
 
@@ -98,8 +80,6 @@ export function ProtectedPostPage({
   ownerRole,
   defaultAvatarUrl,
 }: ProtectedPostPageProps) {
-  const { cardClassName: contentCardClassName, contentClassName: contentPaddingClassName } =
-    getReadingContentClasses()
   const [content, setContent] = useState<string | null>(null)
   const [headings, setHeadings] = useState<HeadingItem[]>([])
   const [unlockToken, setUnlockToken] = useState<string | null>(null)
@@ -128,7 +108,10 @@ export function ProtectedPostPage({
           setLoadError(token ? data.error || '解锁已失效，请重新输入密码' : '')
           return
         }
-        const nextContent = typeof data.content === 'string' ? data.content : ''
+        const nextContent = stripLeadingTitle(
+          typeof data.content === 'string' ? data.content : '',
+          post.title
+        )
         setContent(nextContent)
         const nextHeadings = extractHeadingsFromMarkdown(nextContent, 3).map((heading, index) => ({
           id: `heading-${index}`,
@@ -143,7 +126,7 @@ export function ProtectedPostPage({
         setFetching(false)
       }
     },
-    [post.id, post.slug]
+    [post.id, post.slug, post.title]
   )
 
   useEffect(() => {
@@ -173,254 +156,58 @@ export function ProtectedPostPage({
   const canShowContent = content !== null
 
   return (
-    <div className="schale-reading">
+    <>
       <PostTitleSync title={post.title} minutes={post.readingTime || 1} />
-
-      {/* 文章头部 */}
-      <article className="schale-reading-header py-10 sm:py-14">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="ba-post-heading">
-            {/* 返回按钮 */}
-            <Link
-              href="/posts"
-              className="mb-6 inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              返回文章列表
-            </Link>
-
-            {/* 文章标题 */}
-            <h1 className="mb-6 font-serif text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl dark:text-white">
-              {post.title}
-            </h1>
-
-            {/* 文章摘要 */}
-            {post.excerpt && (
-              <p className="mb-8 text-xl text-gray-600 dark:text-gray-400">{post.excerpt}</p>
+      <ArticleLayout
+        post={post}
+        publishedLabel={post.publishedLabel}
+        updatedLabel={post.updatedAtLabel}
+        views={
+          canShowContent ? (
+            <ViewCount slug={post.slug} initialCount={post.viewCount?.count || 0} />
+          ) : (
+            <ViewCount slug={post.slug} initialCount={post.viewCount?.count || 0} mode="read" />
+          )
+        }
+        headings={headings}
+        prevPost={prevPost}
+        nextPost={nextPost}
+        relatedPosts={relatedPosts}
+        author={{
+          name: ownerName || post.author.name || '',
+          role: ownerRole,
+          avatar: defaultAvatarUrl || post.author.image || '',
+        }}
+        comments={
+          commentsEnabled && canShowContent ? (
+            <CommentSection
+              postSlug={post.slug}
+              allowGuest={!!allowGuest}
+              defaultAvatarUrl={defaultAvatarUrl || undefined}
+              unlockToken={unlockToken || undefined}
+            />
+          ) : null
+        }
+      >
+        {canShowContent ? (
+          <MDXContentClient content={content} />
+        ) : (
+          <>
+            <PostPasswordGate
+              slug={post.slug}
+              title={post.title}
+              excerpt={post.excerpt}
+              onUnlock={handleUnlock}
+            />
+            {fetching && <p className="article-status">正在加载内容…</p>}
+            {loadError && (
+              <p className="article-status article-status--error" role="alert">
+                {loadError}
+              </p>
             )}
-
-            {/* 文章元信息 */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span>{post.author.name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <time>{post.publishedLabel}</time>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{post.readingTime || 1} 分钟阅读</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4" />
-                <span>
-                  {canShowContent ? (
-                    <ViewCount slug={post.slug} initialCount={post.viewCount?.count || 0} />
-                  ) : (
-                    <ViewCount
-                      slug={post.slug}
-                      initialCount={post.viewCount?.count || 0}
-                      mode="read"
-                    />
-                  )}{' '}
-                  次阅读
-                </span>
-              </div>
-              {post.updatedAtLabel && (
-                <div className="pg-post-updated-meta text-primary flex items-center gap-2 font-medium">
-                  <Edit3 className="h-4 w-4" />
-                  <span>最后编辑于 {post.updatedAtLabel}</span>
-                </div>
-              )}
-              <div className="pg-lock-indicator inline-flex shrink-0 items-center gap-1 whitespace-nowrap text-xs">
-                <Lock className="h-3 w-3 shrink-0" aria-hidden="true" />
-                <span>加密文章</span>
-              </div>
-            </div>
-
-            {/* 分类和标签 */}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {post.category && (
-                <Link href={`/posts?category=${post.category.slug}`}>
-                  <Badge variant="secondary" className="pg-public-badge-secondary cursor-pointer">
-                    {post.category.name}
-                  </Badge>
-                </Link>
-              )}
-              {post.postTags.map((pt) => (
-                <Link key={pt.tag.id} href={`/posts?tag=${pt.tag.slug}`}>
-                  <Badge variant="outline" className="pg-public-badge-outline cursor-pointer">
-                    #{pt.tag.name}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </article>
-
-      {/* 文章内容 */}
-      <section className="py-12">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-            {/* 主要内容 */}
-            <div className="min-w-0 lg:col-span-3">
-              {/* 封面图 */}
-              {post.coverImage && (
-                <div className="mb-8 overflow-hidden rounded-lg">
-                  {isInternalImageUrl(post.coverImage) ? (
-                    <Image
-                      unoptimized
-                      src={post.coverImage}
-                      alt={post.title}
-                      width={1600}
-                      height={900}
-                      priority
-                      sizes="(min-width: 1280px) 1152px, (min-width: 1024px) 896px, 100vw"
-                      className="h-auto w-full object-cover"
-                    />
-                  ) : (
-                    <img
-                      src={post.coverImage}
-                      alt={post.title}
-                      className="w-full object-cover"
-                      loading="eager"
-                      decoding="async"
-                    />
-                  )}
-                </div>
-              )}
-
-              {/* MDX内容 / 密码门禁 */}
-              <Card className={`min-w-0 ${contentCardClassName}`}>
-                <CardContent className={`min-w-0 ${contentPaddingClassName}`}>
-                  {canShowContent ? (
-                    <MDXContentClient content={content} />
-                  ) : (
-                    <>
-                      <PostPasswordGate
-                        slug={post.slug}
-                        title={post.title}
-                        excerpt={post.excerpt}
-                        onUnlock={handleUnlock}
-                      />
-                      {fetching && (
-                        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                          正在加载内容...
-                        </p>
-                      )}
-                      {loadError && (
-                        <p className="mt-4 text-center text-sm text-red-600 dark:text-red-400">
-                          {loadError}
-                        </p>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* 上一篇/下一篇导航 */}
-              <Card className="mt-8">
-                <CardContent className="p-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    {prevPost ? (
-                      <Link
-                        href={`/posts/${prevPost.slug}`}
-                        className="group flex items-start gap-3 text-left"
-                      >
-                        <div className="flex-1">
-                          <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">上一篇</p>
-                          <p className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
-                            {prevPost.title}
-                          </p>
-                        </div>
-                        <ArrowLeft className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-                      </Link>
-                    ) : (
-                      <div />
-                    )}
-                    {nextPost ? (
-                      <Link
-                        href={`/posts/${nextPost.slug}`}
-                        className="group flex items-start gap-3 text-right"
-                      >
-                        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-                        <div className="flex-1">
-                          <p className="mb-1 text-xs text-gray-500 dark:text-gray-400">下一篇</p>
-                          <p className="line-clamp-2 text-sm font-medium text-gray-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
-                            {nextPost.title}
-                          </p>
-                        </div>
-                      </Link>
-                    ) : (
-                      <div />
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* 评论区 */}
-              {commentsEnabled && canShowContent && (
-                <div className="mt-8">
-                  <CommentSection
-                    postSlug={post.slug}
-                    allowGuest={!!allowGuest}
-                    defaultAvatarUrl={defaultAvatarUrl || undefined}
-                    unlockToken={unlockToken || undefined}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* 侧边栏 */}
-            <div className="lg:col-span-1">
-              {/* 目录 */}
-              <div className="sticky top-28">
-                <TableOfContents headings={headings} />
-
-                {/* 作者信息 */}
-                <Card className="mt-6">
-                  <CardHeader>
-                    <h3 className="font-semibold">作者</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="border-primary/20 h-12 w-12 border-2">
-                        <AvatarImage src={defaultAvatarUrl || post.author.image || undefined} />
-                        <AvatarFallback className="bg-gray-50 font-serif text-lg font-bold text-gray-900 dark:bg-gray-800 dark:text-white">
-                          {(ownerName || post.author.name || '千叶').charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {ownerName || post.author.name || '千叶'}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {ownerRole || '全栈开发者'}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* 相关文章 */}
-                {relatedPosts.length > 0 && (
-                  <Card className="mt-6">
-                    <CardHeader>
-                      <h3 className="font-semibold">相关文章</h3>
-                    </CardHeader>
-                    <CardContent>
-                      <RelatedPostsList posts={relatedPosts} />
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
+          </>
+        )}
+      </ArticleLayout>
+    </>
   )
 }

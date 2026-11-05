@@ -1,10 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Tag as TagIcon } from 'lucide-react'
 import Link from 'next/link'
-import { ArchiveHeading } from '@/components/layout/archive-heading'
+import { PageHeader } from '@/components/layout/page-header'
 
 export const revalidate = 60
 
@@ -47,54 +45,28 @@ export default async function TagsPage() {
   const sortedTags = [...tags].sort((a, b) => b._count.posts - a._count.posts)
 
   return (
-    <div className="ba-tags-page">
-      {/* 页面头部 */}
-      <ArchiveHeading title="话题索引" description="循着一个关键词，发现更多。" />
-
-      {/* 主要内容区 */}
-      <section className="ba-archive-body">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              共{' '}
-              <span className="pg-public-stat-emphasis font-semibold text-gray-900 dark:text-white">
-                {tags.length}
-              </span>{' '}
-              个标签,
-              <span className="pg-public-stat-emphasis font-semibold text-gray-900 dark:text-white">
-                {totalPosts}
-              </span>{' '}
-              篇文章
-            </p>
+    <div className="page">
+      <PageHeader
+        eyebrow="Tags"
+        title="标签"
+        description={`共 ${tags.length} 个标签 · ${totalPosts} 篇文章`}
+      />
+      <section className="container page-body">
+        {tags.length === 0 ? (
+          <div className="card empty-state">
+            <TagIcon size={24} aria-hidden="true" />
+            <p>暂无标签</p>
           </div>
-
-          {tags.length === 0 ? (
-            <Card>
-              <CardContent className="flex min-h-[300px] flex-col items-center justify-center p-12 text-center">
-                <TagIcon className="mb-4 h-16 w-16 text-gray-400" />
-                <p className="text-lg text-gray-500 dark:text-gray-400">暂无标签</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent className="p-8">
-                <div className="flex flex-wrap gap-3">
-                  {sortedTags.map((tag) => (
-                    <Link key={tag.id} href={`/tags/${tag.slug}`}>
-                      <Badge
-                        variant="secondary"
-                        className="pg-public-badge-secondary cursor-pointer px-4 py-2 text-sm transition-colors"
-                      >
-                        #{tag.name}
-                        <span className="ml-2 text-xs opacity-60">({tag._count.posts})</span>
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        ) : (
+          <div className="tag-cloud">
+            {sortedTags.map((tag) => (
+              <Link key={tag.id} href={`/tags/${tag.slug}`} className="chip tag-cloud__item">
+                #{tag.name}
+                <span>{tag._count.posts}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   )

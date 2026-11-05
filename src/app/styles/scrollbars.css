@@ -1,7 +1,7 @@
 /* Keep native wheel, touch, keyboard and thumb dragging behavior. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #9bb8ca transparent;
+  scrollbar-color: var(--c-faint) transparent;
 }
 @supports selector(::-webkit-scrollbar) {
   /* Non-auto standard properties override the arrow-free WebKit styling. */
@@ -28,7 +28,7 @@
   *::-webkit-scrollbar-thumb {
     border: 2px solid transparent;
     border-radius: 8px;
-    background: #9bb8ca;
+    background: var(--c-faint);
     background-clip: padding-box;
     min-height: 32px;
   }

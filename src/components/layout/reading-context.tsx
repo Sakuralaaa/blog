@@ -56,8 +56,8 @@ export function ReadingProvider({ children }: { children: ReactNode }) {
         Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight)
       )
       const body = post ? document.querySelector<HTMLElement>('.mdx-content') : null
-      const title = post ? document.querySelector<HTMLElement>('.schale-reading-header h1') : null
-      const navHeight = document.querySelector<HTMLElement>('.schale-navbar')?.offsetHeight || 76
+      const title = post ? document.querySelector<HTMLElement>('.article-head h1') : null
+      const navHeight = document.querySelector<HTMLElement>('.site-header')?.offsetHeight || 76
       const titlePassed = Boolean(title && title.getBoundingClientRect().bottom <= navHeight + 8)
       if (!titlePassed) {
         showTitle = false

@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     const body = await readJsonBody(request)
     const title = typeof body.title === 'string' && body.title.trim()
       ? body.title.trim()
-      : '测试邮件 - 执笔为剑'
+      : '测试邮件'
     const message = typeof body.message === 'string' && body.message.trim()
       ? body.message.trim()
-      : '这是一封来自 执笔为剑 的 SMTP 测试通知'
+      : '这是一封 SMTP 测试通知'
 
     await sendEmailTestNotification({ title, message })
 

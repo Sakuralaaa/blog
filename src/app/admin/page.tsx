@@ -96,12 +96,12 @@ export default function AdminDashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="ba-dashboard space-y-6">
+      <div className="admin-dashboard space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">仪表板</h1>
           <p className="text-muted-foreground">欢迎来到您的博客管理后台</p>
         </div>
-        <div className="ba-stats-grid">
+        <div className="admin-stats">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
@@ -116,7 +116,7 @@ export default function AdminDashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="ba-dashboard space-y-6">
+      <div className="admin-dashboard space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">仪表板</h1>
           <p className="text-muted-foreground">欢迎来到您的博客管理后台</p>
@@ -134,20 +134,20 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="ba-dashboard space-y-6">
+    <div className="admin-dashboard space-y-6">
       {/* Page Header */}
-      <header className="ba-workspace-heading">
+      <header className="admin-heading">
         <div>
           <h1>工作台</h1>
         </div>
-        <Link href="/admin/posts/editor" className="schale-primary-link">
+        <Link href="/admin/posts/editor" className="admin-primary-link">
           <PenLine size={19} />
           新建文章
         </Link>
       </header>
 
       {/* Stats Cards */}
-      <div className="ba-stats-grid">
+      <div className="admin-stats">
         <StatsCard
           title="总文章数"
           value={stats.posts.total}
@@ -183,7 +183,7 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <div className="ba-work-queue">
+      <div className="admin-queue">
         <Link href="/admin/comments">
           <MessageSquare size={21} />
           <span>

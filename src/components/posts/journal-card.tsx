@@ -1,6 +1,8 @@
 import Link from 'next/link'
-import { ArrowUpRight, Eye } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import { PostMeta } from './post-meta'
+import { isSafeImageSrc } from '@/lib/utils'
+
 export interface JournalEntry {
   id: string
   slug: string
@@ -15,69 +17,61 @@ export interface JournalEntry {
   postTags: { tag: { id: string; slug: string; name: string } }[]
   viewCount: { count: number | null } | null
 }
+
 export function JournalCard({
   post,
   featured = false,
+  hideTagId,
 }: {
   post: JournalEntry
   featured?: boolean
+  hideTagId?: string
 }) {
+  const cover = !post.isProtected && isSafeImageSrc(post.coverImage) ? post.coverImage : null
+  const tags = post.postTags.filter(({ tag }) => tag.id !== hideTagId).slice(0, 3)
   return (
-    <article className="ba-post-card" data-featured={featured} data-reveal>
-      <div className="ba-post-topline">
-        {post.category && (
-          <Link href={`/categories/${post.category.slug}`}>{post.category.name}</Link>
-        )}
-      </div>
-      {post.coverImage && !post.isProtected && (
-        <Link
-          href={`/posts/${post.slug}`}
-          className="ba-post-image"
-          tabIndex={-1}
-          aria-hidden="true"
-        >
-          <img
-            src={post.coverImage}
-            alt=""
-            width={640}
-            height={320}
-            loading="lazy"
-            decoding="async"
-          />
+    <article
+      className="card card--hover post-card"
+      data-featured={featured || undefined}
+      data-cover={cover ? 'true' : undefined}
+     
+    >
+      {cover && (
+        <Link href={`/posts/${post.slug}`} className="post-card__cover" tabIndex={-1} aria-hidden="true">
+          <img src={cover} alt="" width={640} height={360} loading="lazy" decoding="async" />
         </Link>
       )}
-      <div className="ba-post-copy">
-        <PostMeta
-          publishedAt={post.publishedAt}
-          authorName={post.author.name}
-          readingTime={post.readingTime}
-          isProtected={post.isProtected}
-        />
-        <h3>
+      <div className="post-card__body">
+        <div className="post-card__top">
+          {post.category && (
+            <Link href={`/categories/${post.category.slug}`} className="chip chip--hi">
+              {post.category.name}
+            </Link>
+          )}
+          <PostMeta
+            publishedAt={post.publishedAt}
+            readingTime={post.readingTime}
+            isProtected={post.isProtected}
+          />
+        </div>
+        <h3 className="post-card__title">
           <Link href={`/posts/${post.slug}`}>{post.title}</Link>
         </h3>
-        {post.excerpt && <p>{post.excerpt}</p>}
+        {post.excerpt && <p className="post-card__excerpt">{post.excerpt}</p>}
+        <footer className="post-card__foot">
+          <div className="post-card__tags">
+            {tags.map(({ tag }) => (
+              <Link key={tag.id} href={`/tags/${tag.slug}`}>
+                #{tag.name}
+              </Link>
+            ))}
+          </div>
+          <span className="post-card__views" aria-label={`${post.viewCount?.count || 0} 次阅读`}>
+            <Eye size={14} aria-hidden="true" />
+            {post.viewCount?.count || 0}
+          </span>
+        </footer>
       </div>
-      <footer className="ba-post-bottom">
-        <div>
-          {post.postTags.slice(0, 2).map(({ tag }) => (
-            <Link key={tag.id} href={`/tags/${tag.slug}`}>
-              #{tag.name}
-            </Link>
-          ))}
-        </div>
-        <span>
-          <Eye size={15} />
-          {post.viewCount?.count || 0}
-        </span>
-        <Link
-          href={`/posts/${post.slug}`}
-          aria-label={`阅读：${post.title}`}
-          className="ba-post-open"
-        >
-          <ArrowUpRight size={22} />
-        </Link>
-      </footer>
     </article>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { TriangleLoader } from '@/components/loading/triangle-loader'
+import { Spinner } from '@/components/loading/spinner'
 
 /* eslint-disable @next/next/no-img-element -- Reuse authorized media URLs directly; the image optimizer must not proxy protected files. */
 
@@ -32,7 +32,7 @@ export default function ImagePreviewDialog({
     >
       <DialogContent
         fullScreen
-        className="ba-image-viewer"
+        className="ui-image-viewer"
         showCloseButton={false}
         aria-describedby={undefined}
         onCloseAutoFocus={(event) => {
@@ -101,7 +101,7 @@ function ImageSlide({
   }
   return (
     <div
-      className="ba-image-slide"
+      className="ui-image-slide"
       onKeyDown={(event) => {
         if (event.ctrlKey || event.metaKey || event.altKey) return
         if (event.key === '+' || event.key === '=') {
@@ -126,9 +126,9 @@ function ImageSlide({
         }
       }}
     >
-      <header className="ba-image-toolbar">
-        <DialogTitle className="ba-image-caption">{image.alt || '图片预览'}</DialogTitle>
-        <div className="ba-image-actions">
+      <header className="ui-image-toolbar">
+        <DialogTitle className="ui-image-caption">{image.alt || '图片预览'}</DialogTitle>
+        <div className="ui-image-actions">
           <Button
             variant="ghost"
             size="icon"
@@ -163,7 +163,7 @@ function ImageSlide({
       </header>
       <div
         ref={viewportRef}
-        className="ba-image-viewport"
+        className="ui-image-viewport"
         data-zoomed={zoom > 1}
         tabIndex={0}
         role="region"
@@ -198,14 +198,14 @@ function ImageSlide({
         onLostPointerCapture={endDrag}
       >
         {status === 'error' ? (
-          <p className="ba-image-message" role="status">
+          <p className="ui-image-message" role="status">
             图片加载失败，请关闭后重试。
           </p>
         ) : (
           <>
             {status === 'loading' && (
-              <p className="ba-image-message" role="status">
-                <TriangleLoader />
+              <p className="ui-image-message" role="status">
+                <Spinner />
                 正在加载图片…
               </p>
             )}
@@ -213,7 +213,7 @@ function ImageSlide({
               src={image.src}
               alt={image.alt}
               draggable={false}
-              className="ba-image-original"
+              className="ui-image-original"
               style={{
                 width: Math.max(1, natural.width * fit * zoom),
                 height: Math.max(1, natural.height * fit * zoom),
@@ -234,7 +234,7 @@ function ImageSlide({
           </>
         )}
       </div>
-      <footer className="ba-image-footer">
+      <footer className="ui-image-footer">
         <Button
           variant="ghost"
           size="icon"

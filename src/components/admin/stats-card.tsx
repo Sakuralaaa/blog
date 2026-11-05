@@ -9,8 +9,8 @@ interface StatsCardProps {
 }
 export function StatsCard({ title, value, change, icon: Icon }: StatsCardProps) {
   return (
-    <div className="ba-stat">
-      <div className="ba-stat-label">
+    <div className="admin-stat">
+      <div className="admin-stat-label">
         <Icon size={18} />
         <span>{title}</span>
       </div>

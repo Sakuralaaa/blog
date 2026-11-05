@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     const body = await readJsonBody(request)
     const title = typeof body.title === 'string' && body.title.trim()
       ? body.title.trim()
-      : '测试推送 - 执笔为剑'
+      : '测试推送'
     const message = typeof body.message === 'string' && body.message.trim()
       ? body.message.trim()
-      : '这是一条来自 执笔为剑 的 Gotify 测试通知'
+      : '这是一条 Gotify 测试通知'
     const priority = typeof body.priority === 'number' && Number.isFinite(body.priority)
       ? body.priority
       : 5

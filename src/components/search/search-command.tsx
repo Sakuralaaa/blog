@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
-import { TriangleLoader } from '@/components/loading/triangle-loader'
+import { Spinner } from '@/components/loading/spinner'
 import { Search, FileText, Folder, Hash, X, Lock, ArrowUpRight } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 
@@ -108,31 +108,31 @@ export function SearchCommand({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="ba-search-dialog max-md:translate-y-0"
+        className="search-dialog max-md:translate-y-0"
         showCloseButton={false}
         onOpenAutoFocus={(event) => {
           event.preventDefault()
           input.current?.focus()
         }}
       >
-        <header className="ba-search-heading">
+        <header className="search-heading">
           <div>
             <span>SEARCH</span>
-            <DialogTitle>搜索手记</DialogTitle>
+            <DialogTitle>搜索</DialogTitle>
           </div>
           <button
-            className="ba-icon-button"
+            className="icon-btn"
             onClick={() => onOpenChange(false)}
             aria-label="关闭搜索"
           >
-            <X size={21} />
+            <X size={18} />
           </button>
         </header>
         <DialogDescription className="sr-only">
           输入至少两个字符，搜索文章、分类和标签。方向键选择结果，回车打开。
         </DialogDescription>
-        <div className="ba-search-field">
-          <Search size={21} />
+        <div className="search-field">
+          <Search size={18} />
           <input
             ref={input}
             value={query}
@@ -160,7 +160,7 @@ export function SearchCommand({
             </button>
           )}
         </div>
-        <div className="ba-search-tabs" aria-label="搜索范围">
+        <div className="search-tabs" aria-label="搜索范围">
           {tabs.map((item) => (
             <button
               key={item.key}
@@ -177,18 +177,18 @@ export function SearchCommand({
             </button>
           ))}
         </div>
-        <div className="ba-search-results" aria-busy={loading}>
+        <div className="search-results" aria-busy={loading}>
           {loading && (
-            <p className="ba-search-empty" role="status">
-              <TriangleLoader />
+            <p className="search-empty" role="status">
+              <Spinner />
               正在查找…
             </p>
           )}
           {!loading && error && (
-            <div className="ba-search-empty" role="alert">
+            <div className="search-empty" role="alert">
               <p>{error}</p>
               <button
-                className="ba-secondary-button"
+                className="btn btn--sm"
                 onClick={() => setRetry((value) => value + 1)}
               >
                 重新搜索
@@ -196,14 +196,14 @@ export function SearchCommand({
             </div>
           )}
           {!loading && !error && query.trim().length < 2 && (
-            <div className="ba-search-empty">
+            <div className="search-empty">
               <Search size={30} />
               <p>想找哪篇文章？</p>
               <small>输入至少两个字符，也可以搜索分类与标签。</small>
             </div>
           )}
           {!loading && !error && results && !items.length && (
-            <div className="ba-search-empty" role="status">
+            <div className="search-empty" role="status">
               <p>
                 没有找到相关
                 {tabs.find((item) => item.key === tab)?.label === '全部'
@@ -223,15 +223,15 @@ export function SearchCommand({
                   id={`${id}-result-${index}`}
                   role="option"
                   aria-selected={selected === index}
-                  className="ba-search-result"
+                  className="search-result"
                   onPointerMove={() => setSelected(index)}
                   onClick={() => select(item)}
                   tabIndex={-1}
                 >
-                  <span className="ba-search-result-icon">
+                  <span className="search-result-icon">
                     <Icon size={20} />
                   </span>
-                  <span className="ba-search-result-copy">
+                  <span className="search-result-copy">
                     <strong>{item.title || item.name}</strong>
                     {item.excerpt && <small>{item.excerpt}</small>}
                     <span>
@@ -252,7 +252,7 @@ export function SearchCommand({
             })}
           </div>
         </div>
-        <footer className="ba-search-footer">
+        <footer className="search-footer">
           <span>
             <kbd>↑↓</kbd> 选择 <kbd>Enter</kbd> 打开
           </span>

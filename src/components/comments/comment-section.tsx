@@ -15,7 +15,7 @@ export function CommentSection({ postSlug, allowGuest, defaultAvatarUrl, unlockT
   const [submittedComment, setSubmittedComment] = useState<CommentSubmission>()
 
   return (
-    <div className="space-y-6">
+    <section className="comments" aria-label="评论">
       <CommentForm
         postSlug={postSlug}
         allowGuest={!!allowGuest}
@@ -29,6 +29,6 @@ export function CommentSection({ postSlug, allowGuest, defaultAvatarUrl, unlockT
         allowGuest={allowGuest}
         unlockToken={unlockToken}
       />
-    </div>
+    </section>
   )
 }
