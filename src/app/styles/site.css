@@ -692,7 +692,7 @@ html[data-style='soft'] .project-card__cover {
   opacity: 1;
   pointer-events: auto;
 }
-@media (hover: none), (pointer: coarse) {
+@media (hover: none) and (pointer: coarse) {
   .project-rail__arrow {
     display: none;
   }
