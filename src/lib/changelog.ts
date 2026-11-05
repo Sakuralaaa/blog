@@ -5,6 +5,9 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.3.1', date: '2026-11-06', highlights: [
+    '图标改为更简约的双圆嵌套样式。',
+  ] },
   { version: '1.3.0', date: '2026-11-06', highlights: [
     '项目改名 Lagoon，换新图标与后台品牌。',
     '首页「作品与文章」改为全宽自动循环滚动的竖版卡片，作品与文章混排，悬停暂停、可手动滑。',
