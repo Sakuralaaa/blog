@@ -6,8 +6,8 @@ import { HeroSection } from '@/components/home/hero-section'
 import { getPublicSettings } from '@/lib/settings'
 import { RecentCommentsTimeline } from '@/components/comments/recent-comments-timeline'
 import { JournalCard } from '@/components/posts/journal-card'
-import { PROJECT_CARD_SELECT, ProjectCard } from '@/components/projects/project-card'
-import { ProjectRail } from '@/components/projects/project-rail'
+import { ShowcaseMarquee, type ShowcaseItem } from '@/components/home/showcase-marquee'
+import { projectPath } from '@/lib/projects'
 
 export const revalidate = 60
 
@@ -20,12 +20,18 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [settings, projects, latestPosts] = await Promise.all([
+  const [settings, projects, showcasePosts, latestPosts] = await Promise.all([
     getPublicSettings(),
     prisma.project.findMany({
       orderBy: { createdAt: 'desc' },
       take: 12,
-      select: PROJECT_CARD_SELECT,
+      select: { id: true, slug: true, name: true, description: true, image: true, createdAt: true },
+    }),
+    prisma.post.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { publishedAt: 'desc' },
+      take: 12,
+      select: { id: true, slug: true, title: true, excerpt: true, coverImage: true, publishedAt: true, createdAt: true, isProtected: true },
     }),
     prisma.post.findMany({
       where: {
@@ -55,23 +61,51 @@ export default async function HomePage() {
     }),
   ])
 
+  const showcase: ShowcaseItem[] = [
+    ...projects.map((project) => ({
+      date: project.createdAt.getTime(),
+      item: {
+        key: `work-${project.id}`,
+        kind: 'work' as const,
+        title: project.name,
+        subtitle: project.description,
+        image: project.image,
+        href: projectPath(project),
+      },
+    })),
+    ...showcasePosts.map((post) => ({
+      date: (post.publishedAt ?? post.createdAt).getTime(),
+      item: {
+        key: `post-${post.id}`,
+        kind: 'post' as const,
+        title: post.title,
+        subtitle: post.isProtected ? null : post.excerpt,
+        image: post.coverImage,
+        href: `/posts/${post.slug}`,
+      },
+    })),
+  ]
+    .sort((a, b) => b.date - a.date)
+    .map(({ item }) => item)
+
   return (
     <div className="home">
       <HeroSection settings={settings} />
 
-      {projects.length > 0 && (
-        <section id="projects" className="home-section container" aria-labelledby="home-projects">
-          <header className="section-head">
-            <h2 id="home-projects">精选作品</h2>
-            <Link href="/projects" className="text-link">
-              全部作品 <ArrowRight size={15} aria-hidden="true" />
-            </Link>
+      {showcase.length > 0 && (
+        <section id="projects" className="home-section home-showcase" aria-labelledby="home-showcase">
+          <header className="section-head container">
+            <h2 id="home-showcase">作品与文章</h2>
+            <span className="section-head__links">
+              <Link href="/projects" className="text-link">
+                全部作品 <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+              <Link href="/posts" className="text-link">
+                全部文章 <ArrowRight size={15} aria-hidden="true" />
+              </Link>
+            </span>
           </header>
-          <ProjectRail label="精选作品">
-            {projects.map((project, index) => (
-              <ProjectCard key={project.id} project={project} priority={index < 3} />
-            ))}
-          </ProjectRail>
+          <ShowcaseMarquee items={showcase} label="作品与文章" />
         </section>
       )}
 
