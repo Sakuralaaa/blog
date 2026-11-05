@@ -17,7 +17,7 @@ function parseMpsSetting(rawValue: string): { text: string; href: string } | nul
   return { text: normalized, href }
 }
 
-/** Compact two-row footer: identity + links, then legal line. */
+/** Compact two-row footer: site name + links, then a centred legal line. */
 export function Footer({ settings }: { settings?: Record<string, unknown> }) {
   const s: Record<string, unknown> = settings || {}
   const getStr = (key: string, fallback = '') =>
@@ -25,7 +25,6 @@ export function Footer({ settings }: { settings?: Record<string, unknown> }) {
   const getBool = (key: string, fallback = false) =>
     typeof s[key] === 'boolean' ? (s[key] as boolean) : fallback
   const title = getStr('site.title') || '个人主页'
-  const description = getStr('site.description')
   const icp = getStr('site.footer_icp')
   const mps = parseMpsSetting(getStr('site.footer_mps'))
   const owner = getStr('site.footer_copyright') || getStr('site.ownerName') || title
@@ -55,7 +54,6 @@ export function Footer({ settings }: { settings?: Record<string, unknown> }) {
         <div className="site-footer__row">
           <div className="site-footer__id">
             <strong>{title}</strong>
-            {description && <span>{description}</span>}
           </div>
           <nav className="site-footer__links" aria-label="页脚导航">
             {SITE_NAV_LINKS.filter((link) => link.href !== '/').map((link) => (

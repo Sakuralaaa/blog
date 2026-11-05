@@ -283,7 +283,9 @@ html[data-style='soft'] .site-nav a {
 .site-footer__legal {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: 4px 18px;
+  text-align: center;
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--c-line);
