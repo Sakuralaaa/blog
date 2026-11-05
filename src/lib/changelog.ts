@@ -5,6 +5,10 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.4.1', date: '2026-11-06', highlights: [
+    '关于页重排：顶部全宽资料卡，下方简介通栏、其余板块两列等高。',
+    '身份按「·」拆成标签，不再在词中间折行；正文避免末行孤字。',
+  ] },
   { version: '1.4.0', date: '2026-11-06', highlights: [
     '接口密钥新增「完全管理」权限：等同管理员，可通过 API / MCP 修改个人资料、站点设置、评论、用户和文件。',
     'MCP 新增 get_settings、update_settings、评论 / 用户 / 文件管理、get_stats 与通用 admin_request。',

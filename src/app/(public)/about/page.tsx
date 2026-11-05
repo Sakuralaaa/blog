@@ -102,6 +102,13 @@ export default async function AboutPage() {
     })
     .filter((group) => group.items.length > 0)
 
+  // Split "A · B · C" style roles so each part wraps as a whole, never mid-word.
+  const roleParts = (role || '')
+    .split(/\s*[·•|｜/、]\s*/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+  const sideBlocks = Number(skillGroups.length > 0) + Number(hobbyItems.length > 0) + 1
+
   return (
     <div className="page">
       <PageHeader eyebrow="About" title="关于我" />
@@ -116,8 +123,15 @@ export default async function AboutPage() {
               )}
             </span>
           </AboutAvatarTrigger>
+          <div className="about__identity">
           {name && <h2>{name}</h2>}
-          {role && <p className="about__role">{role}</p>}
+          {roleParts.length > 0 && (
+            <p className="about__role">
+              {roleParts.map((part, idx) => (
+                <span key={`${part}-${idx}`}>{part}</span>
+              ))}
+            </p>
+          )}
           {(location || joinedYear) && (
             <ul className="about__facts">
               {location && (
@@ -134,6 +148,7 @@ export default async function AboutPage() {
               )}
             </ul>
           )}
+          </div>
           {contacts.length > 0 && (
             <div className="about__socials">
               {contacts.map(({ label, href, icon: Icon }) => (
@@ -153,8 +168,8 @@ export default async function AboutPage() {
           )}
         </aside>
 
-        <div className="about__main">
-          <section className="card about__block">
+        <div className="about__main" data-blocks={sideBlocks}>
+          <section className="card about__block about__block--wide">
             <h2>简介</h2>
             {bioParagraphs.length > 0 ? (
               bioParagraphs.map((p, idx) => <p key={idx}>{p}</p>)
