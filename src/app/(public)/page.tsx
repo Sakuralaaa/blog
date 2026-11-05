@@ -6,7 +6,8 @@ import { HeroSection } from '@/components/home/hero-section'
 import { getPublicSettings } from '@/lib/settings'
 import { RecentCommentsTimeline } from '@/components/comments/recent-comments-timeline'
 import { JournalCard } from '@/components/posts/journal-card'
-import { ProjectCard } from '@/components/projects/project-card'
+import { PROJECT_CARD_SELECT, ProjectCard } from '@/components/projects/project-card'
+import { ProjectRail } from '@/components/projects/project-rail'
 
 export const revalidate = 60
 
@@ -23,8 +24,8 @@ export default async function HomePage() {
     getPublicSettings(),
     prisma.project.findMany({
       orderBy: { createdAt: 'desc' },
-      take: 6,
-      select: { id: true, name: true, url: true, description: true, image: true },
+      take: 12,
+      select: PROJECT_CARD_SELECT,
     }),
     prisma.post.findMany({
       where: {
@@ -66,11 +67,11 @@ export default async function HomePage() {
               全部作品 <ArrowRight size={15} aria-hidden="true" />
             </Link>
           </header>
-          <div className="project-grid">
+          <ProjectRail label="精选作品">
             {projects.map((project, index) => (
               <ProjectCard key={project.id} project={project} priority={index < 3} />
             ))}
-          </div>
+          </ProjectRail>
         </section>
       )}
 

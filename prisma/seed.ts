@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import { Prisma, PrismaClient } from '@prisma/client'
+import { upgradeSettings } from '../scripts/upgrade-settings.mjs'
 
 
 const prisma = new PrismaClient()
@@ -96,42 +96,9 @@ async function main() {
     })
   }
 
-  // Upgrades: values that still equal the retired upstream template defaults (old persona,
-  // upstream links, placeholder ICP) are replaced with the neutral defaults above.
-  // Anything an admin has edited is left untouched.
-  const neutral = new Map(settings.map((s) => [s.key, s.value]))
-  for (const [key, legacyHashes] of Object.entries(LEGACY_DEFAULT_HASHES)) {
-    const current = await prisma.setting.findUnique({ where: { key } })
-    if (!current || !neutral.has(key)) continue
-    const digest = createHash('sha256').update(JSON.stringify(current.value)).digest('hex').slice(0, 24)
-    if (legacyHashes.includes(digest)) {
-      await prisma.setting.update({ where: { key }, data: { value: neutral.get(key)! } })
-    }
-  }
-}
-
-/** sha256(JSON.stringify(value)).slice(0, 24) of retired upstream template defaults. */
-const LEGACY_DEFAULT_HASHES: Record<string, string[]> = {
-  'site.title': ['b4901b5eb0c9ae081f7f9d2e'],
-  'site.description': ['b3db0dba82914fb1b82dc3d7'],
-  'site.ownerName': ['4b8b79499238d21f9b773452'],
-  'hero.typingTitles': ['f3f4690d5104f70ef22f89b8'],
-  'hero.subtitle': ['e6ad51f7b4c2c37e1479c427'],
-  'hero.location': ['60ed13e8d1151bda9940546b'],
-  'profile.tagline': ['3d2abc52213696ed1523b65d'],
-  'profile.signature': ['ff6996a7e291b36a93d68a35'],
-  'profile.role': ['f9413124abf4c86590f62c44'],
-  'profile.location': ['3d6bb39de3992f236ef0c7c1'],
-  'profile.joinedYear': ['b917be05ced2b88510a0a206'],
-  'profile.bio': ['ea5e364a0032d987bfbaa8f2'],
-  'profile.techStack': ['a01a64b1b6d78bc1d92faf62'],
-  'profile.hobbies': ['01d303982bde30ffb88104ab'],
-  'profile.contactIntro': ['35b360e0bfce9de4a5c23c13'],
-  'profile.contactGithub': ['cd08071fee2f6adfadb51d66'],
-  'email.from': ['ca5b4fa45ea8168f2c8cbd58'],
-  'site.footer_icp': ['1220fbd518e37fae84b49a4d', '8df5a2573fd378ee890b33e7'],
-  'site.footer_copyright': ['9c30390f551adf9af02b99b1'],
-  'site.footer_powered_by': ['241aa041ba54b7bb61368326'],
+  // Upgrades: retired template defaults (old persona, upstream links, placeholder ICP)
+  // become the neutral defaults above. Anything an admin edited is left untouched.
+  await upgradeSettings(prisma)
 }
 
 main()

@@ -83,20 +83,20 @@ const TASK_TYPES = new Set<ImportExportTaskType>([
 ])
 
 const globalForTaskRunner = globalThis as typeof globalThis & {
-  __papergridTaskRunningSet?: Set<string>
-  __papergridTaskQueue?: string[]
-  __papergridTaskLastCleanupAt?: number
-  __papergridTaskRecoveryDone?: boolean
-  __papergridTaskRecoveryPromise?: Promise<void>
+  __lagoonTaskRunningSet?: Set<string>
+  __lagoonTaskQueue?: string[]
+  __lagoonTaskLastCleanupAt?: number
+  __lagoonTaskRecoveryDone?: boolean
+  __lagoonTaskRecoveryPromise?: Promise<void>
 }
 
 const runningTaskSet =
-  globalForTaskRunner.__papergridTaskRunningSet ||
-  (globalForTaskRunner.__papergridTaskRunningSet = new Set<string>())
+  globalForTaskRunner.__lagoonTaskRunningSet ||
+  (globalForTaskRunner.__lagoonTaskRunningSet = new Set<string>())
 
 const taskQueue =
-  globalForTaskRunner.__papergridTaskQueue ||
-  (globalForTaskRunner.__papergridTaskQueue = [])
+  globalForTaskRunner.__lagoonTaskQueue ||
+  (globalForTaskRunner.__lagoonTaskQueue = [])
 
 const taskLogger = logger.child({ module: 'import-export-tasks' })
 
@@ -207,11 +207,11 @@ function parseTaskTime(task: TaskRecord): number | null {
 
 async function cleanupExpiredTasks() {
   const now = Date.now()
-  const lastCleanupAt = globalForTaskRunner.__papergridTaskLastCleanupAt || 0
+  const lastCleanupAt = globalForTaskRunner.__lagoonTaskLastCleanupAt || 0
   if (now - lastCleanupAt < TASK_CLEANUP_INTERVAL_MS) {
     return
   }
-  globalForTaskRunner.__papergridTaskLastCleanupAt = now
+  globalForTaskRunner.__lagoonTaskLastCleanupAt = now
 
   let taskFiles: string[] = []
   try {
@@ -304,15 +304,15 @@ function compareTaskByCreationOrder(a: TaskRecord, b: TaskRecord) {
 }
 
 async function recoverUnfinishedTasks() {
-  if (globalForTaskRunner.__papergridTaskRecoveryDone) {
+  if (globalForTaskRunner.__lagoonTaskRecoveryDone) {
     return
   }
-  if (globalForTaskRunner.__papergridTaskRecoveryPromise) {
-    await globalForTaskRunner.__papergridTaskRecoveryPromise
+  if (globalForTaskRunner.__lagoonTaskRecoveryPromise) {
+    await globalForTaskRunner.__lagoonTaskRecoveryPromise
     return
   }
 
-  globalForTaskRunner.__papergridTaskRecoveryPromise = (async () => {
+  globalForTaskRunner.__lagoonTaskRecoveryPromise = (async () => {
     let taskFiles: string[] = []
     try {
       taskFiles = await readdir(TASK_DATA_DIR)
@@ -321,7 +321,7 @@ async function recoverUnfinishedTasks() {
       if (nodeError.code !== 'ENOENT') {
         taskLogger.error({ err: error }, '恢复未完成任务失败')
       }
-      globalForTaskRunner.__papergridTaskRecoveryDone = true
+      globalForTaskRunner.__lagoonTaskRecoveryDone = true
       return
     }
 
@@ -358,13 +358,13 @@ async function recoverUnfinishedTasks() {
       scheduleTaskExecution(task.id)
     }
 
-    globalForTaskRunner.__papergridTaskRecoveryDone = true
+    globalForTaskRunner.__lagoonTaskRecoveryDone = true
   })()
 
   try {
-    await globalForTaskRunner.__papergridTaskRecoveryPromise
+    await globalForTaskRunner.__lagoonTaskRecoveryPromise
   } finally {
-    globalForTaskRunner.__papergridTaskRecoveryPromise = undefined
+    globalForTaskRunner.__lagoonTaskRecoveryPromise = undefined
   }
 }
 
@@ -433,7 +433,7 @@ async function stripInputArtifact(task: TaskRecord): Promise<TaskRecord> {
 async function runBackupExport(task: TaskRecord): Promise<TaskRecord> {
   const includeSensitive = task.options.includeSensitive === true
   const payload = await exportBackupData(includeSensitive)
-  const fileName = `papergrid-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
+  const fileName = `lagoon-backup-${new Date().toISOString().replace(/[:.]/g, '-')}.json`
   const outputPath = taskFilePath(task.id, sanitizeFileName(fileName))
   await writeFile(outputPath, JSON.stringify(payload, null, 2), {
     encoding: 'utf8',

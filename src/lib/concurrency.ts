@@ -1,5 +1,5 @@
-const state = globalThis as typeof globalThis & { __papergridJobs?: Map<string, number> }
-const jobs = state.__papergridJobs ??= new Map<string, number>()
+const state = globalThis as typeof globalThis & { __lagoonJobs?: Map<string, number> }
+const jobs = state.__lagoonJobs ??= new Map<string, number>()
 
 // Bounded admission rather than retaining an unbounded queue of upload bodies.
 export function tryAcquireJob(name: string, max = 1): (() => void) | null {

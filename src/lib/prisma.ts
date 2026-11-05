@@ -59,8 +59,8 @@ function createPostWriter(client: PrismaClient, privateMediaAccess: PrivateMedia
   } } })
 }
 
-const state = globalThis as typeof globalThis & { __papergridPrisma?: ReturnType<typeof createClient> }
-const database = state.__papergridPrisma ??= createClient()
+const state = globalThis as typeof globalThis & { __lagoonPrisma?: ReturnType<typeof createClient> }
+const database = state.__lagoonPrisma ??= createClient()
 export const prisma = database.client
 export const postWriter = database.writer
 

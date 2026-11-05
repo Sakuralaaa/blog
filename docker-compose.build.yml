@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: papergrid-local:latest
+    image: lagoon-local:latest
     container_name: papergrid
     ports:
       - "127.0.0.1:3000:3000"

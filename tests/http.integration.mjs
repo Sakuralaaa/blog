@@ -16,7 +16,7 @@ const dir = await mkdtemp(path.join(root, '.local/http-integration-'))
 await copyFile(process.env.DATABASE_URL.replace(/^file:/, ''), path.join(dir, 'test.sqlite'))
 const dbUrl = `file:${dir}/test.sqlite`
 const prisma = new PrismaClient({ datasources: { db: { url: dbUrl } } })
-const email = 'integration@papergrid.invalid'
+const email = 'integration@lagoon.invalid'
 const password = randomBytes(24).toString('base64url')
 const user = await prisma.user.upsert({ where: { email }, create: { email, name: '测试管理员', role: 'ADMIN', password: await bcrypt.hash(password, 10) }, update: { role: 'ADMIN', password: await bcrypt.hash(password, 10) } })
 const port = 3092
@@ -24,7 +24,7 @@ const base = `http://127.0.0.1:${port}`
 await cp('public', '.next/standalone/public', { recursive: true, filter: source => path.resolve(source) !== path.resolve('public/uploads') })
 await cp('.next/static', '.next/standalone/.next/static', { recursive: true })
 const child = spawn(process.execPath, ['.next/standalone/server.js'], {
-  env: { ...process.env, PORT: String(port), HOSTNAME: '127.0.0.1', DATABASE_URL: dbUrl, DATA_DIR: dir, MEDIA_ROOT: path.join(dir, 'uploads'), NEXTAUTH_URL: base, NEXT_PUBLIC_SITE_URL: base, AUTH_TRUST_HOST: 'true', NODE_OPTIONS: `--max-old-space-size=160 --max-semi-space-size=2 --require=${root}/tests/memory-probe.cjs`, PAPERGRID_METRICS_PATH: path.join(dir, 'metrics.json'), MALLOC_ARENA_MAX: '2', NEXT_TELEMETRY_DISABLED: '1' },
+  env: { ...process.env, PORT: String(port), HOSTNAME: '127.0.0.1', DATABASE_URL: dbUrl, DATA_DIR: dir, MEDIA_ROOT: path.join(dir, 'uploads'), NEXTAUTH_URL: base, NEXT_PUBLIC_SITE_URL: base, AUTH_TRUST_HOST: 'true', NODE_OPTIONS: `--max-old-space-size=160 --max-semi-space-size=2 --require=${root}/tests/memory-probe.cjs`, LAGOON_METRICS_PATH: path.join(dir, 'metrics.json'), MALLOC_ARENA_MAX: '2', NEXT_TELEMETRY_DISABLED: '1' },
   stdio: ['ignore', 'pipe', 'pipe'],
 })
 let serverLog = ''
@@ -163,7 +163,7 @@ try {
  await req(`/api/admin/api-keys/${limitedKey.apiKey.id}`,{method:'DELETE'})
  console.log('PASS: plugin private media reuse denied, public create/update preserved')
 
- const peer = await prisma.user.create({data:{email:'peer-security@papergrid.invalid',name:'Peer admin',role:'ADMIN',password:await bcrypt.hash(password,10)}})
+ const peer = await prisma.user.create({data:{email:'peer-security@lagoon.invalid',name:'Peer admin',role:'ADMIN',password:await bcrypt.hash(password,10)}})
  await login(password,peer.email)
  const peerKey = (await req('/api/admin/api-keys',{method:'POST',data:{name:'Peer revocation',permissions:['POST_READ','POST_CREATE']},expected:201})).data
  const peerHeaders = { Authorization: `Bearer ${peerKey.plainKey}` }
@@ -312,7 +312,7 @@ try {
  console.log('4 concurrent readers, 48 requests: p50='+Math.round(latencies[24])+'ms p95='+Math.round(latencies[45])+'ms')
 
  const beforeEmailChange = new Map(jar)
- const changedEmail = 'renamed-integration@papergrid.invalid'
+ const changedEmail = 'renamed-integration@lagoon.invalid'
  await req('/api/admin/account',{method:'PATCH',data:{currentPassword:password,newEmail:changedEmail}})
  await req('/api/admin/settings',{cookies:new Map(beforeEmailChange),expected:401})
  await login(password,changedEmail)

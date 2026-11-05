@@ -10,7 +10,7 @@ type Counter = {
 
 export type BackupPayload = {
   meta: {
-    format: 'papergrid-backup'
+    format: 'lagoon-backup'
     version: '1.0.0'
     exportedAt: string
     includeSensitive: boolean
@@ -38,9 +38,15 @@ export type BackupPayload = {
     }>
     projects: Array<{
       name: string
+      slug: string | null
       url: string
       description: string | null
       image: string | null
+      role: string | null
+      period: string | null
+      tags: string | null
+      gallery: string | null
+      content: string | null
       createdAt: string
       updatedAt: string
     }>
@@ -136,6 +142,14 @@ function isRecord(value: unknown): value is RecordNode {
 function toBooleanFlag(value: string | null | undefined): boolean {
   if (!value) return false
   return TRUE_VALUES.has(value.toLowerCase())
+}
+
+function projectKeys(project: { url: string; slug: string | null; name: string }): string[] {
+  return [
+    project.slug ? `slug:${project.slug}` : '',
+    project.url ? `url:${project.url}` : '',
+    `name:${project.name}`,
+  ].filter(Boolean)
 }
 
 function pickString(value: unknown, maxLength = 255): string | null {
@@ -266,9 +280,15 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
       orderBy: { createdAt: 'asc' },
       select: {
         name: true,
+        slug: true,
         url: true,
         description: true,
         image: true,
+        role: true,
+        period: true,
+        tags: true,
+        gallery: true,
+        content: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -322,7 +342,7 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
 
   return {
     meta: {
-      format: 'papergrid-backup',
+      format: 'lagoon-backup',
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
       includeSensitive,
@@ -350,9 +370,15 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
       })),
       projects: projects.map((item) => ({
         name: item.name,
+        slug: item.slug,
         url: item.url,
         description: item.description,
         image: item.image,
+        role: item.role,
+        period: item.period,
+        tags: item.tags,
+        gallery: item.gallery,
+        content: item.content,
         createdAt: item.createdAt.toISOString(),
         updatedAt: item.updatedAt.toISOString(),
       })),
@@ -387,8 +413,8 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
 export function parseBackupPayload(raw: unknown) {
   if (raw && typeof raw === 'object' && 'meta' in raw) {
     const meta = (raw as { meta?: { format?: string; version?: string } }).meta
-    if (meta?.format && meta.format !== 'papergrid-backup') throw new Error('不支持的备份格式')
-    if (meta?.version && meta.version !== '1.0.0') throw new Error('备份版本不受支持，请使用匹配的 PaperGrid 版本导入')
+    if (meta?.format && meta.format !== 'lagoon-backup') throw new Error('不支持的备份格式')
+    if (meta?.version && meta.version !== '1.0.0') throw new Error('备份版本不受支持，请使用匹配的 Lagoon 版本导入')
   }
   const dataNode = getDataNode(raw)
   if (!dataNode) {
@@ -424,11 +450,6 @@ export async function importBackupData(input: {
       .map((item) => pickString(item.slug, 120))
       .filter((slug): slug is string => Boolean(slug))
   ))
-  const projectUrls = Array.from(new Set(
-    parsed.projects
-      .map((item) => pickString(item.url, 1200))
-      .filter((url): url is string => Boolean(url))
-  ))
   const settingKeys = Array.from(new Set(
     parsed.settings
       .map((item) => pickString(item.key, 200))
@@ -452,12 +473,10 @@ export async function importBackupData(input: {
       select: { id: true, slug: true },
     })
     : Promise.resolve([] as Array<{ id: string; slug: string }>)
-  const existingProjectsPromise = projectUrls.length > 0
-    ? prisma.project.findMany({
-      where: { url: { in: projectUrls } },
-      select: { id: true, url: true },
-    })
-    : Promise.resolve([] as Array<{ id: string; url: string }>)
+  // Works are matched by slug, then URL, then name; the table is small enough to read whole.
+  const existingProjectsPromise = parsed.projects.length > 0
+    ? prisma.project.findMany({ select: { id: true, url: true, slug: true, name: true } })
+    : Promise.resolve([] as Array<{ id: string; url: string; slug: string | null; name: string }>)
   const existingSettingsPromise = settingKeys.length > 0
     ? prisma.setting.findMany({
       where: { key: { in: settingKeys } },
@@ -496,10 +515,10 @@ export async function importBackupData(input: {
     tagIdBySlug.set(tag.slug, tag.id)
   }
 
-  const projectIdByUrl = new Map<string, string>()
+  const projectIdByKey = new Map<string, string>()
   for (const project of existingProjects) {
-    if (!projectIdByUrl.has(project.url)) {
-      projectIdByUrl.set(project.url, project.id)
+    for (const key of projectKeys(project)) {
+      if (!projectIdByKey.has(key)) projectIdByKey.set(key, project.id)
     }
   }
 
@@ -606,28 +625,41 @@ export async function importBackupData(input: {
 
   for (const item of parsed.projects) {
     const name = pickString(item.name, 200)
-    const url = pickString(item.url, 1200)
+    const url = pickString(item.url, 1200) || ''
+    const slug = pickString(item.slug, 120)
     const description = pickLongString(item.description, 4000)
     const image = pickLongString(item.image, 2000)
+    const details = {
+      role: pickString(item.role, 200),
+      period: pickString(item.period, 200),
+      tags: pickString(item.tags, 1000),
+      gallery: pickLongString(item.gallery, 40000),
+      content: pickLongString(item.content, 400000),
+    }
     const createdAt = pickDate(item.createdAt)
     const updatedAt = pickDate(item.updatedAt)
 
-    if (!name || !url) {
+    if (!name) {
       summary.projects.skipped += 1
-      pushWarning(summary, '存在作品记录缺少 name 或 url，已跳过')
+      pushWarning(summary, '存在作品记录缺少 name，已跳过')
       continue
     }
 
     try {
-      const existingId = projectIdByUrl.get(url)
+      const existingId = projectKeys({ url, slug, name })
+        .map((key) => projectIdByKey.get(key))
+        .find(Boolean)
 
       if (existingId) {
         await prisma.project.update({
           where: { id: existingId },
           data: {
             name,
+            url,
             description,
             image,
+            ...details,
+            ...(slug && !projectIdByKey.has(`slug:${slug}`) ? { slug } : {}),
             ...(updatedAt ? { updatedAt } : {}),
           },
         })
@@ -639,15 +671,17 @@ export async function importBackupData(input: {
         data: {
           name,
           url,
+          slug: slug && !projectIdByKey.has(`slug:${slug}`) ? slug : null,
           description,
           image,
+          ...details,
           ...(createdAt ? { createdAt } : {}),
           ...(updatedAt ? { updatedAt } : {}),
         },
         select: { id: true },
       })
       summary.projects.created += 1
-      projectIdByUrl.set(url, created.id)
+      for (const key of projectKeys({ url, slug, name })) projectIdByKey.set(key, created.id)
     } catch (error) {
       console.error('导入作品失败:', error)
       summary.projects.skipped += 1

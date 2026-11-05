@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
-import { Circle, ExternalLink, LogOut } from 'lucide-react'
+import { ExternalLink, LogOut } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,10 +70,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex items-center gap-4">
             <AdminMobileSidebar items={navItems} />
             <Link href="/admin" className="admin-brand">
-              <span className="admin-brand__mark" aria-hidden="true">
-                <Circle size={14} strokeWidth={3} />
-              </span>
-              <span>管理后台</span>
+              <img src="/logo.svg" alt="" width={26} height={26} className="admin-brand__logo" />
+              <span>Lagoon</span>
+              <span className="text-muted-foreground hidden text-xs font-normal sm:inline">管理后台</span>
             </Link>
           </div>
 

@@ -92,6 +92,7 @@ fi
 
 run_migrate
 node /app/scripts/upgrade-media.mjs
+node /app/scripts/upgrade-settings.mjs
 node /app/scripts/bootstrap-admin.mjs
 
 exec node server.js

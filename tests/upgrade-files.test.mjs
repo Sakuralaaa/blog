@@ -13,7 +13,7 @@ import { bootstrapAdmin } from '../scripts/bootstrap-admin.mjs'
 const execute = promisify(execFile)
 test('legacy files move privately, shared URLs separate, and default credentials rotate', async () => {
  const root = process.cwd()
- const dir = await mkdtemp(path.join(tmpdir(),'papergrid-upgrade-'))
+ const dir = await mkdtemp(path.join(tmpdir(),'lagoon-upgrade-'))
  const dbPath = path.join(dir,'upgrade.sqlite')
  const sqlite = new DatabaseSync(dbPath)
  for(const migration of (await readdir('prisma/migrations')).filter(n=>/^\d/.test(n)).sort()) sqlite.exec(await readFile(`prisma/migrations/${migration}/migration.sql`,'utf8'))
@@ -22,7 +22,7 @@ test('legacy files move privately, shared URLs separate, and default credentials
  const previousDir = process.env.DATA_DIR
  process.env.DATA_DIR = dir
  try {
-  const admin = await prisma.user.create({data:{email:'legacy@papergrid.invalid',role:'ADMIN',password:await bcrypt.hash('admin123',10)}})
+  const admin = await prisma.user.create({data:{email:'legacy@lagoon.invalid',role:'ADMIN',password:await bcrypt.hash('admin123',10)}})
   await bootstrapAdmin(prisma)
   const rotated = await prisma.user.findUnique({where:{id:admin.id}})
   assert.ok(!await bcrypt.compare('admin123',rotated.password))

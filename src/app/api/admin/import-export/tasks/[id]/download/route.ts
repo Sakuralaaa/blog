@@ -25,7 +25,7 @@ export async function GET(
         'Content-Type': artifact.mimeType,
         'Content-Length': String(artifact.size),
         'Cache-Control': 'private, no-store',
-        'Content-Disposition': `attachment; filename="papergrid-export"; filename*=UTF-8''${encoded}`,
+        'Content-Disposition': `attachment; filename="lagoon-export"; filename*=UTF-8''${encoded}`,
       },
     })
   } catch (error) {

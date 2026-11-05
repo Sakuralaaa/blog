@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { Prisma } from '@prisma/client'
 import { requireApiKey } from '@/lib/api-keys'
 import { prisma } from '@/lib/prisma'
 import { RequestBodyError, bodyErrorResponse, readJsonBody } from '@/lib/request-body'
+import { ProjectInputError, parseProjectInput, type ProjectInput } from '@/lib/projects'
+import { revalidateProjects } from '@/lib/project-revalidate'
 
 export const dynamic = 'force-dynamic'
-
-function text(v: unknown, max: number) {
-  return typeof v === 'string' ? v.trim().slice(0, max) : ''
-}
 
 // GET /api/plugin/projects - 作品列表 (API Key)
 export async function GET(req: Request) {
@@ -20,23 +18,23 @@ export async function GET(req: Request) {
 
 // POST /api/plugin/projects - 新增作品 (API Key)
 export async function POST(req: Request) {
+  const auth = await requireApiKey(req, 'PROJECT_WRITE')
+  if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status, headers: auth.headers })
   try {
-    const auth = await requireApiKey(req, 'PROJECT_WRITE')
-    if (!auth.ok) return NextResponse.json({ error: auth.error }, { status: auth.status, headers: auth.headers })
     const body = await readJsonBody(req)
-    const name = text(body.name, 120)
-    const url = text(body.url, 2048)
-    if (!name) return NextResponse.json({ error: '项目名称不能为空' }, { status: 400, headers: auth.headers })
-    if (!/^https?:\/\//i.test(url)) return NextResponse.json({ error: '项目链接必须是 http(s) 地址' }, { status: 400, headers: auth.headers })
-    const project = await prisma.project.create({
-      data: { name, url, description: text(body.description, 2000) || null, image: text(body.image, 2048) || null },
-    })
-    revalidatePath('/projects')
-    revalidatePath('/')
+    const data = parseProjectInput(body, false) as ProjectInput
+    const project = await prisma.project.create({ data })
+    revalidateProjects(project)
     return NextResponse.json({ project }, { status: 201, headers: auth.headers })
   } catch (error) {
     if (error instanceof RequestBodyError) return bodyErrorResponse(error)
+    if (error instanceof ProjectInputError) {
+      return NextResponse.json({ error: error.message }, { status: 400, headers: auth.headers })
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json({ error: '访问路径已被其他作品使用' }, { status: 409, headers: auth.headers })
+    }
     console.error('插件创建作品失败:', error)
-    return NextResponse.json({ error: '创建作品失败' }, { status: 500 })
+    return NextResponse.json({ error: '创建作品失败' }, { status: 500, headers: auth.headers })
   }
 }

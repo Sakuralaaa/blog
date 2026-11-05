@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { ImagePickerDialog } from '@/components/admin/image-picker-dialog'
+import { ImageField } from '@/components/admin/image-field'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ShieldAlert } from 'lucide-react'
@@ -202,18 +202,15 @@ export default function AdminStylesPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                图片地址
+                背景图片
               </label>
-              <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                <Input
-                  className="sm:flex-1"
-                  value={backgroundUrl}
-                  onChange={(e) => setBackgroundUrl(e.target.value)}
-                  placeholder="https://example.com/bg.jpg 或 /api/files/..."
-                  disabled={loading}
-                />
-                <ImagePickerDialog title="选择背景图" onSelect={(url) => setBackgroundUrl(url)} />
-              </div>
+              <ImageField
+                className="mt-2"
+                value={backgroundUrl}
+                onChange={setBackgroundUrl}
+                pickerTitle="选择背景图"
+                disabled={loading}
+              />
               <p className="mt-2 text-xs text-muted-foreground">
                 留空则使用默认的点阵纸背景。图片会铺满整个页面并固定不滚动。
               </p>

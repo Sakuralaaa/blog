@@ -1,8 +1,10 @@
-import type { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { RequestBodyError, bodyErrorResponse, readJsonBody } from '@/lib/request-body'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { ProjectInputError, parseProjectInput } from '@/lib/projects'
+import { revalidateProjects } from '@/lib/project-revalidate'
 
 // PATCH /api/admin/projects/[id] - 更新作品
 export async function PATCH(
@@ -17,43 +19,23 @@ export async function PATCH(
 
     const { id } = await params
     const body = await readJsonBody(request)
+    const data = parseProjectInput(body, true)
 
-    const data: Prisma.ProjectUpdateInput = {}
+    const previous = await prisma.project.findUnique({ where: { id }, select: { id: true, slug: true } })
+    if (!previous) return NextResponse.json({ error: '作品不存在' }, { status: 404 })
 
-    if (typeof body.name === 'string') {
-      const name = body.name.trim()
-      if (!name) {
-        return NextResponse.json({ error: '项目名称不能为空' }, { status: 400 })
-      }
-      data.name = name
-    }
-
-    if (typeof body.url === 'string') {
-      const url = body.url.trim()
-      if (!url) {
-        return NextResponse.json({ error: '项目链接不能为空' }, { status: 400 })
-      }
-      data.url = url
-    }
-
-    if (typeof body.description === 'string') {
-      const description = body.description.trim()
-      data.description = description || null
-    }
-
-    if (typeof body.image === 'string') {
-      const image = body.image.trim()
-      data.image = image || null
-    }
-
-    const project = await prisma.project.update({
-      where: { id },
-      data,
-    })
+    const project = await prisma.project.update({ where: { id }, data })
+    revalidateProjects(previous, project)
 
     return NextResponse.json({ project })
   } catch (error) {
     if (error instanceof RequestBodyError) return bodyErrorResponse(error)
+    if (error instanceof ProjectInputError) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json({ error: '访问路径已被其他作品使用' }, { status: 409 })
+    }
     console.error('更新作品失败:', error)
     return NextResponse.json({ error: '更新作品失败' }, { status: 500 })
   }
@@ -61,7 +43,7 @@ export async function PATCH(
 
 // DELETE /api/admin/projects/[id] - 删除作品
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -72,11 +54,11 @@ export async function DELETE(
 
     const { id } = await params
 
-    await prisma.project.delete({ where: { id } })
+    const project = await prisma.project.delete({ where: { id } })
+    revalidateProjects(project)
 
     return NextResponse.json({ message: '删除成功' })
   } catch (error) {
-    if (error instanceof RequestBodyError) return bodyErrorResponse(error)
     console.error('删除作品失败:', error)
     return NextResponse.json({ error: '删除作品失败' }, { status: 500 })
   }

@@ -1,5 +1,5 @@
 /**
- * PaperGrid 插件文章 API 集成测试脚本
+ * Lagoon 插件文章 API 集成测试脚本
  *
  * 前置条件：
  * 1. 服务已启动（默认 http://localhost:6066）
@@ -533,7 +533,7 @@ function printSummary() {
 }
 
 async function main() {
-  console.log('PaperGrid 插件文章 API 测试开始')
+  console.log('Lagoon 插件文章 API 测试开始')
   console.log(`目标地址: ${BASE_URL}`)
 
   if (!API_KEY || API_KEY.includes('your_api_key_here')) {

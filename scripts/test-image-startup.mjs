@@ -8,10 +8,10 @@ import { randomBytes } from 'node:crypto'
 import { createServer } from 'node:net'
 
 const execute = promisify(execFile)
-const image = process.env.IMAGE || process.argv[2] || 'papergrid-local:latest'
+const image = process.env.IMAGE || process.argv[2] || 'lagoon-local:latest'
 const root = path.resolve(import.meta.dirname, '..')
-const dir = await mkdtemp(path.join(tmpdir(), 'papergrid-image-startup-'))
-const prefix = `papergrid-startup-${randomBytes(6).toString('hex')}`
+const dir = await mkdtemp(path.join(tmpdir(), 'lagoon-image-startup-'))
+const prefix = `lagoon-startup-${randomBytes(6).toString('hex')}`
 const containers = new Set()
 const volumes = new Set()
 const abort = new AbortController()
@@ -84,7 +84,7 @@ try {
     const name = `${prefix}-${mode}`
     const volume = `${name}-data`
     volumes.add(volume)
-    await docker(['volume', 'create', '--label', 'papergrid.test=image-startup', volume])
+    await docker(['volume', 'create', '--label', 'lagoon.test=image-startup', volume])
     const port = await freePort()
     const base = `http://127.0.0.1:${port}`
     const initialPassword = randomBytes(24).toString('base64url')
@@ -103,7 +103,7 @@ try {
       await oneShot(['/app/scripts/startup-test.mjs', 'seed-legacy'])
     }
     containers.add(name)
-    await docker(['run', '--detach', '--name', name, '--label', 'papergrid.test=image-startup', ...mounted, '-p', `127.0.0.1:${port}:3000`, image])
+    await docker(['run', '--detach', '--name', name, '--label', 'lagoon.test=image-startup', ...mounted, '-p', `127.0.0.1:${port}:3000`, image])
     await waitForApp(base, name)
     await checkHttp(base, mode === 'fresh' ? 'admin@example.com' : 'upgrade@example.invalid', mode === 'fresh' ? initialPassword : legacyPassword)
     await docker(['exec', name, 'node', '/app/scripts/startup-test.mjs', `verify-${mode}`])

@@ -24,7 +24,7 @@ function normalizeMediaUrl(value: unknown): string | null {
   if (!raw) return null
 
   try {
-    const parsed = raw.startsWith('/') ? new URL(raw, 'http://papergrid.local') : new URL(raw)
+    const parsed = raw.startsWith('/') ? new URL(raw, 'http://lagoon.local') : new URL(raw)
     const pathname = parsed.pathname.replace(/\/+$/, '')
     return pathname || '/'
   } catch {
@@ -44,9 +44,9 @@ async function getReferenceSummary(mediaId: string) {
     prisma.postMedia.count({ where: { mediaId } }),
     prisma.project.findMany({
       where: {
-        OR: [{ image: targetUrl }, { image: { contains: fuzzyHint } }],
+        OR: [{ image: targetUrl }, { image: { contains: fuzzyHint } }, { gallery: { contains: fuzzyHint } }],
       },
-      select: { image: true },
+      select: { image: true, gallery: true },
     }),
     prisma.user.findMany({
       where: {
@@ -61,7 +61,10 @@ async function getReferenceSummary(mediaId: string) {
   ])
 
   const posts = postRows
-  const projects = projectRows.filter((row) => isMediaUrlReference(row.image, mediaId)).length
+  const projects = projectRows.filter((row) =>
+    isMediaUrlReference(row.image, mediaId) ||
+    (row.gallery || '').split('\n').some((line) => isMediaUrlReference(line, mediaId))
+  ).length
   const users = userRows.filter((row) => isMediaUrlReference(row.image, mediaId)).length
   const settings = settingRows
     .filter((row) => isMediaUrlReference(unwrapSettingValue(row.value), mediaId))

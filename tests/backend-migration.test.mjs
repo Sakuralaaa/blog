@@ -10,7 +10,7 @@ import path from 'node:path'
 const execFileAsync = promisify(execFile)
 let directory, prisma, postWriter, migration, user
 before(async () => {
-  directory = await mkdtemp(path.join(tmpdir(), 'papergrid-migration-test-'))
+  directory = await mkdtemp(path.join(tmpdir(), 'lagoon-migration-test-'))
   process.env.DATABASE_URL = `file:${directory}/test.db`
   process.env.MEDIA_ROOT = path.join(directory, 'uploads')
   const db = new DatabaseSync(path.join(directory, 'test.db'))

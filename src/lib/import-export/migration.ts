@@ -276,7 +276,7 @@ export async function exportMigrationMarkdownZip() {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
 
   return {
-    fileName: `papergrid-migration-${timestamp}.zip`,
+    fileName: `lagoon-migration-${timestamp}.zip`,
     mimeType: 'application/zip',
     fileBuffer: zip,
     postCount: posts.length,

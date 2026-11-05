@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client'
 import { getCommentPage } from '../src/lib/comment-pagination.ts'
 
 test('comment pagination locates targets, bounds parent context and isolates unpublished comments', async () => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'papergrid-comment-pages-'))
+  const directory = await mkdtemp(path.join(tmpdir(), 'lagoon-comment-pages-'))
   const databasePath = path.join(directory, 'test.sqlite')
   const sqlite = new DatabaseSync(databasePath)
   for (const migration of (await readdir('prisma/migrations')).filter(name => /^\d/.test(name)).sort()) {
@@ -17,7 +17,7 @@ test('comment pagination locates targets, bounds parent context and isolates unp
   sqlite.close()
   const db = new PrismaClient({ datasources: { db: { url: `file:${databasePath}` } } })
   try {
-    const author = await db.user.create({ data: { email: 'comment-test@papergrid.invalid', name: '作者' } })
+    const author = await db.user.create({ data: { email: 'comment-test@lagoon.invalid', name: '作者' } })
     const post = await db.post.create({ data: { title: '评论测试', slug: 'comments', content: '', authorId: author.id, status: 'PUBLISHED' } })
     const otherPost = await db.post.create({ data: { title: '其他文章', slug: 'other', content: '', authorId: author.id } })
     // Equal timestamps exercise the stable ID tiebreaker used by both rank and pagination.
@@ -25,7 +25,7 @@ test('comment pagination locates targets, bounds parent context and isolates unp
     await db.comment.createMany({ data: Array.from({ length: 65 }, (_, index) => ({
       id: `c${String(index + 1).padStart(3, '0')}`,
       postId: post.id, content: index === 0 ? '父评论'.repeat(200) : `评论 ${index + 1}`,
-      authorName: '访客', authorEmail: 'secret@papergrid.invalid', status: 'APPROVED', createdAt: date,
+      authorName: '访客', authorEmail: 'secret@lagoon.invalid', status: 'APPROVED', createdAt: date,
     })) })
     await db.comment.update({ where: { id: 'c031' }, data: { parentId: 'c001' } })
     await db.comment.update({ where: { id: 'c032' }, data: { parentId: 'c031' } })

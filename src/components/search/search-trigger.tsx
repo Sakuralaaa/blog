@@ -26,10 +26,10 @@ export function SearchTrigger() {
       }
     }
     window.addEventListener('keydown', keydown)
-    window.addEventListener('papergrid:open-search', show)
+    window.addEventListener('lagoon:open-search', show)
     return () => {
       window.removeEventListener('keydown', keydown)
-      window.removeEventListener('papergrid:open-search', show)
+      window.removeEventListener('lagoon:open-search', show)
     }
   }, [])
   return (

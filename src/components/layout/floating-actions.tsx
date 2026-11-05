@@ -49,7 +49,7 @@ export function FloatingActions() {
             trigger.current?.focus({ preventScroll: true })
             const next = nextPanel.current
             nextPanel.current = null
-            if (next === 'search') window.dispatchEvent(new Event('papergrid:open-search'))
+            if (next === 'search') window.dispatchEvent(new Event('lagoon:open-search'))
             else if (next) setPanel(next)
           }}
         >

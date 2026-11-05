@@ -82,7 +82,7 @@ test('HTML media attributes follow browser parsing while preserving the surround
 })
 
 test('post writes atomically isolate media, maintain references and compensate failed files', async t => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'papergrid-media-write-'))
+  const directory = await mkdtemp(path.join(tmpdir(), 'lagoon-media-write-'))
   const dbPath = path.join(directory, 'test.sqlite')
   const uploadRoot = path.join(directory, 'uploads')
   const sqlite = new DatabaseSync(dbPath)

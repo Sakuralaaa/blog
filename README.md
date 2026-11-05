@@ -1,25 +1,23 @@
 <div align="center">
-  <img src="./public/logo.svg" alt="blog" width="88" height="88" />
-  <h1>blog</h1>
-  <p>个人主页、作品集与博客，一个容器跑起来。<br/>内置后台、评论、搜索、MCP 写作接口，四套可切换的界面风格。</p>
+  <img src="./public/logo.svg" alt="Lagoon" width="96" height="96" />
+  <h1>Lagoon</h1>
+  <p>一个容器跑起来的个人主页、作品集与博客。<br/>作品横向展示、点开就是详情页；文章、评论、搜索、后台和 MCP 写作接口都在里面。</p>
   <p><code>ghcr.io/sakuralaaa/blog:latest</code> · <a href="https://github.com/Sakuralaaa/Atoll">Atoll</a> 一键应用模板</p>
 </div>
 
-> 基于 [xywml/PaperGrid](https://github.com/xywml/PaperGrid)（MIT）重做：去掉原有的角色立绘与主题素材，前台按“个人主页 + 作品 + 文章”重新设计。
+> Lagoon（潟湖）是环礁围起来的那片平静水面，和 Atoll 正好一对：Atoll 管部署，Lagoon 放你的作品和文字。
 
 ## 主要特性
 
-- Next.js App Router + React 19
-- Prisma ORM
-- NextAuth 认证
-- 管理后台（文章、标签、分类、评论、用户、系统设置、文件管理）
-- 文件管理（图片与 PDF / ZIP 附件、受保护文件鉴权、分页、预览、删除、URL 回填）
-- MDX 内容支持、代码高亮、数学公式与图表
-- 深色模式；四套内置风格（Atoll 纸面、极简、杂志、柔和），后台设默认，访客可在导航栏切换
-- 首页：个人介绍、精选作品（带封面）、最新文章；作品页 `/projects`（旧 `/yaji` 自动跳转）
-- 自定义背景：后台「样式管理」可设背景图和遮罩深浅
-- MCP 端点 `POST /api/mcp`：Claude Code、Codex 等 Agent 用后台生成的 API Key 写文章、传图、管理分类标签和作品（新文章默认草稿）。接入：`claude mcp add --transport http blog https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`
-- `/api/plugin/projects` 及权限 `PROJECT_READ` / `PROJECT_WRITE`
+- **作品集**：首页「精选作品」横向滑动（桌面有左右箭头，手机手指滑），点卡片进作品详情页：封面、角色、时间、标签、截图画廊（可放大）、一篇 Markdown 介绍正文、访问链接和上一个 / 下一个。作品可设自定义路径，如 `/projects/portfolio`
+- **文章**：Markdown / MDX、代码高亮、数学公式、Mermaid 图表、目录、加密文章、分类与标签、归档、全文搜索、阅读量
+- **评论**：游客或登录评论、审核、邮件与 Gotify 通知、退订链接
+- **四套界面风格**：Atoll 纸面、极简、杂志、柔和；后台设默认，访客可在导航栏切换；深色模式；自定义背景图与遮罩
+- **图片直接传**：后台所有图片栏（Logo、Favicon、头像、背景、作品封面、截图、文章封面）旁都有「上传」按钮，从电脑选图即传即填；也能把图片拖到输入框上或 Ctrl+V 粘贴截图。图库弹窗同样支持拖拽和粘贴
+- **管理后台**：文章、作品、分类、标签、评论、用户、文件管理、导入导出、接口密钥、站点设置
+- **给 Agent 用**：MCP 端点 `POST /api/mcp`，Claude Code、Codex 等用后台生成的 API Key 写文章、传图、管理作品（含详情页字段）。接入：`claude mcp add --transport http lagoon https://你的域名/api/mcp --header "Authorization: Bearer <API Key>"`；另有 `/api/plugin/*` REST 接口
+- **升级无感**：每次启动自动迁移数据库；还在用旧版模板默认文案（例如旧站名）的设置项会自动换成新默认值，你改过的内容不动
+- 技术栈：Next.js App Router + React 19、Prisma（SQLite）、NextAuth
 
 ## 快速开始
 
@@ -198,10 +196,12 @@ SMTP 邮件通知说明：
 
 ## 图片上传与文件管理
 
-后台新增“文件管理”子目录，支持：
-- 上传图片（仅 `jpg/jpeg/png/webp/avif`）
+图片不用先去文件管理：后台每个图片栏旁边都有「上传」按钮，从电脑选图，传完自动填好；也可以把图片拖到输入框上、或在输入框里 Ctrl+V 粘贴截图。「图库」弹窗里同样能拖进来或粘贴，上传后直接选中。
+
+「文件管理」页仍然可以：
+- 上传图片（`jpg/jpeg/png/webp/avif`）以及 PDF / ZIP 附件
 - 预览、复制 URL、删除文件
-- 删除时自动检查引用（文章封面、作品图、用户头像、站点设置）
+- 删除时自动检查引用（文章、作品封面与截图、用户头像、站点设置）
 
 默认限制：
 - 单文件上限：`10MB`
@@ -415,7 +415,7 @@ src/
 │   ├── posts/          # 文章页面
 │   ├── tags/           # 标签页面
 │   ├── about/          # 关于页
-│   └── (public)/projects/ # 作品页
+│   └── (public)/projects/ # 作品列表与作品详情页 [slug]
 ├── components/         # 组件
 ├── hooks/              # 自定义 Hooks
 ├── i18n/               # 国际化

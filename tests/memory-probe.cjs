@@ -3,7 +3,7 @@
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs = require('node:fs')
 let peakRss = 0
-const output = process.env.PAPERGRID_METRICS_PATH
+const output = process.env.LAGOON_METRICS_PATH
 if (output) setInterval(() => {
  const usage = process.memoryUsage()
  peakRss = Math.max(peakRss, usage.rss)

@@ -258,8 +258,8 @@ export default function AdminApiKeysPage() {
             <div className="font-medium">Codex（~/.codex/config.toml）</div>
             <pre className="mt-1 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs">{`[mcp_servers.blog]
 url = "${mcpUrl}"
-bearer_token_env_var = "PAPERGRID_API_KEY"`}</pre>
-            <p className="mt-1 text-xs text-muted-foreground">然后在终端里 export PAPERGRID_API_KEY=你的密钥。</p>
+bearer_token_env_var = "LAGOON_API_KEY"`}</pre>
+            <p className="mt-1 text-xs text-muted-foreground">然后在终端里 export LAGOON_API_KEY=你的密钥。</p>
           </div>
           <p className="text-xs text-muted-foreground">
             Agent 新建的文章默认是草稿，确认后再让它发布。

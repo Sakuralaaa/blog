@@ -43,6 +43,9 @@ const obj = (properties: Json, required: string[] = []) => ({ type: 'object', pr
 const pick = (args: Json, keys: string[]) => Object.fromEntries(keys.filter((k) => args[k] !== undefined).map((k) => [k, args[k]]))
 const enc = encodeURIComponent
 
+const PROJECT_FIELDS = ['name', 'slug', 'url', 'description', 'image', 'role', 'period', 'tags', 'gallery', 'content']
+const PROJECT_SCHEMA = Object.fromEntries(PROJECT_FIELDS.map((field) => [field, str]))
+
 const TOOLS: Tool[] = [
   {
     name: 'list_posts',
@@ -127,16 +130,17 @@ const TOOLS: Tool[] = [
   },
   {
     name: 'create_project',
-    description: '在「作品」页新增作品（name、url 必填，可带 description 与封面 image）。',
-    inputSchema: obj({ name: str, url: str, description: str, image: str }, ['name', 'url']),
-    run: (a, call) => call('POST', '/api/plugin/projects', pick(a, ['name', 'url', 'description', 'image'])),
+    description:
+      '在「作品」页新增作品（name 必填）。点开作品是详情页：image 封面，role 担任角色，period 时间（如 2025.03 – 2025.06），tags 逗号分隔，gallery 每行一个截图 url，content 为 Markdown 介绍正文，url 为访问链接，slug 为详情页路径。',
+    inputSchema: obj(PROJECT_SCHEMA, ['name']),
+    run: (a, call) => call('POST', '/api/plugin/projects', pick(a, PROJECT_FIELDS)),
   },
   {
     name: 'update_project',
     description: '修改「作品」页的作品。',
-    inputSchema: obj({ id: str, name: str, url: str, description: str, image: str }, ['id']),
+    inputSchema: obj({ id: str, ...PROJECT_SCHEMA }, ['id']),
     run: (a, call) =>
-      call('PATCH', `/api/plugin/projects/${enc(String(a.id))}`, pick(a, ['name', 'url', 'description', 'image'])),
+      call('PATCH', `/api/plugin/projects/${enc(String(a.id))}`, pick(a, PROJECT_FIELDS)),
   },
   {
     name: 'delete_project',

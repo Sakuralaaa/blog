@@ -56,41 +56,41 @@ type AiIndexTaskStatePayload = {
 }
 
 const globalForAiIndexTaskQueue = globalThis as typeof globalThis & {
-  __papergridAiIndexTaskQueue?: AiIndexTaskRecord[]
-  __papergridAiIndexTaskHistory?: AiIndexTaskRecord[]
-  __papergridAiIndexTaskCurrent?: AiIndexTaskRecord | null
-  __papergridAiIndexTaskRunning?: boolean
-  __papergridAiIndexTaskWorker?: Promise<void> | null
-  __papergridAiIndexTaskStateLoaded?: boolean
-  __papergridAiIndexTaskStateLoading?: Promise<void> | null
+  __lagoonAiIndexTaskQueue?: AiIndexTaskRecord[]
+  __lagoonAiIndexTaskHistory?: AiIndexTaskRecord[]
+  __lagoonAiIndexTaskCurrent?: AiIndexTaskRecord | null
+  __lagoonAiIndexTaskRunning?: boolean
+  __lagoonAiIndexTaskWorker?: Promise<void> | null
+  __lagoonAiIndexTaskStateLoaded?: boolean
+  __lagoonAiIndexTaskStateLoading?: Promise<void> | null
 }
 
 const taskQueue =
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskQueue ||
-  (globalForAiIndexTaskQueue.__papergridAiIndexTaskQueue = [])
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskQueue ||
+  (globalForAiIndexTaskQueue.__lagoonAiIndexTaskQueue = [])
 
 const taskHistory =
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskHistory ||
-  (globalForAiIndexTaskQueue.__papergridAiIndexTaskHistory = [])
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskHistory ||
+  (globalForAiIndexTaskQueue.__lagoonAiIndexTaskHistory = [])
 
-if (!globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent) {
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent = null
+if (!globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent) {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent = null
 }
 
-if (globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning === undefined) {
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning = false
+if (globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning === undefined) {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning = false
 }
 
-if (!globalForAiIndexTaskQueue.__papergridAiIndexTaskWorker) {
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskWorker = null
+if (!globalForAiIndexTaskQueue.__lagoonAiIndexTaskWorker) {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskWorker = null
 }
 
-if (globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoaded === undefined) {
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoaded = false
+if (globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoaded === undefined) {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoaded = false
 }
 
-if (!globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading) {
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading = null
+if (!globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading) {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading = null
 }
 
 function nowIso() {
@@ -195,8 +195,8 @@ async function persistTaskState() {
     JSON.stringify({
       queue: taskQueue,
       history: taskHistory,
-      current: globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent ?? null,
-      running: Boolean(globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning),
+      current: globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent ?? null,
+      running: Boolean(globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning),
     })
   ) as Prisma.InputJsonValue
 
@@ -223,18 +223,18 @@ async function persistTaskState() {
 }
 
 async function ensureTaskStateLoaded() {
-  if (globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoaded) {
+  if (globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoaded) {
     ensureWorkerRunning()
     return
   }
 
-  if (globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading) {
-    await globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading
+  if (globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading) {
+    await globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading
     ensureWorkerRunning()
     return
   }
 
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading = (async () => {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading = (async () => {
     const row = await prisma.setting.findUnique({
       where: {
         key: TASK_STATE_KEY,
@@ -261,17 +261,17 @@ async function ensureTaskStateLoaded() {
         taskQueue.unshift(parsed.current)
       }
 
-      globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent = null
-      globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning = false
+      globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent = null
+      globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning = false
     }
 
-    globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoaded = true
+    globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoaded = true
   })()
 
   try {
-    await globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading
+    await globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading
   } finally {
-    globalForAiIndexTaskQueue.__papergridAiIndexTaskStateLoading = null
+    globalForAiIndexTaskQueue.__lagoonAiIndexTaskStateLoading = null
   }
 
   // 恢复 Promise 已完成后启动，避免 worker 与加载状态相互等待。
@@ -376,13 +376,13 @@ async function executeTask(task: AiIndexTaskRecord) {
 }
 
 function ensureWorkerRunning() {
-  if (globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning || taskQueue.length === 0) {
+  if (globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning || taskQueue.length === 0) {
     return
   }
 
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning = true
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning = true
 
-  globalForAiIndexTaskQueue.__papergridAiIndexTaskWorker = (async () => {
+  globalForAiIndexTaskQueue.__lagoonAiIndexTaskWorker = (async () => {
     await persistTaskState()
 
     while (taskQueue.length > 0) {
@@ -394,7 +394,7 @@ function ensureWorkerRunning() {
       task.status = 'running'
       task.startedAt = nowIso()
       task.error = null
-      globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent = task
+      globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent = task
       await persistTaskState()
 
       try {
@@ -407,14 +407,14 @@ function ensureWorkerRunning() {
         task.error = error instanceof Error ? error.message : '索引任务执行失败'
       } finally {
         task.finishedAt = nowIso()
-        globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent = null
+        globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent = null
         pushHistory({ ...task })
         await persistTaskState()
       }
     }
   })().finally(() => {
-    globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning = false
-    globalForAiIndexTaskQueue.__papergridAiIndexTaskWorker = null
+    globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning = false
+    globalForAiIndexTaskQueue.__lagoonAiIndexTaskWorker = null
     void persistTaskState()
     if (taskQueue.length > 0) {
       ensureWorkerRunning()
@@ -448,9 +448,9 @@ export async function enqueueRebuildIndexTask(input?: {
 }) {
   await ensureTaskStateLoaded()
 
-  const currentTask = globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent
+  const currentTask = globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent
   if (
-    globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning &&
+    globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning &&
     currentTask &&
     currentTask.type === 'rebuild'
   ) {
@@ -555,10 +555,10 @@ export async function getAiIndexTaskStatus() {
     }),
   ])
 
-  const currentTask = globalForAiIndexTaskQueue.__papergridAiIndexTaskCurrent
+  const currentTask = globalForAiIndexTaskQueue.__lagoonAiIndexTaskCurrent
 
   return {
-    running: Boolean(globalForAiIndexTaskQueue.__papergridAiIndexTaskRunning),
+    running: Boolean(globalForAiIndexTaskQueue.__lagoonAiIndexTaskRunning),
     queueSize: taskQueue.length,
     totalPublishedPosts,
     vectorStats,

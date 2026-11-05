@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { useToast } from '@/hooks/use-toast'
-import { ImagePickerDialog } from '@/components/admin/image-picker-dialog'
+import { ImageField } from '@/components/admin/image-field'
 import { Loader2 } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
@@ -513,51 +513,36 @@ export default function AdminSettingsPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Logo URL
+                  Logo
                 </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <Input
-                    className="sm:flex-1"
-                    value={String(getVal('site.logoUrl') || '')}
-                    onChange={(e) => setVal('site.logoUrl', e.target.value)}
-                  />
-                  <ImagePickerDialog
-                    title="选择站点 Logo"
-                    onSelect={(url) => setVal('site.logoUrl', url)}
-                  />
-                </div>
+                <ImageField
+                  className="mt-2"
+                  value={String(getVal('site.logoUrl') || '')}
+                  onChange={(url) => setVal('site.logoUrl', url)}
+                  pickerTitle="选择站点 Logo"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Favicon URL
+                  Favicon
                 </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <Input
-                    className="sm:flex-1"
-                    value={String(getVal('site.faviconUrl') || '')}
-                    onChange={(e) => setVal('site.faviconUrl', e.target.value)}
-                  />
-                  <ImagePickerDialog
-                    title="选择站点 Favicon"
-                    onSelect={(url) => setVal('site.faviconUrl', url)}
-                  />
-                </div>
+                <ImageField
+                  className="mt-2"
+                  value={String(getVal('site.faviconUrl') || '')}
+                  onChange={(url) => setVal('site.faviconUrl', url)}
+                  pickerTitle="选择站点 Favicon"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  默认用户头像 URL
+                  头像（首页和默认用户头像）
                 </label>
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-                  <Input
-                    className="sm:flex-1"
-                    value={String(getVal('site.defaultAvatarUrl') || '')}
-                    onChange={(e) => setVal('site.defaultAvatarUrl', e.target.value)}
-                  />
-                  <ImagePickerDialog
-                    title="选择默认头像"
-                    onSelect={(url) => setVal('site.defaultAvatarUrl', url)}
-                  />
-                </div>
+                <ImageField
+                  className="mt-2"
+                  value={String(getVal('site.defaultAvatarUrl') || '')}
+                  onChange={(url) => setVal('site.defaultAvatarUrl', url)}
+                  pickerTitle="选择默认头像"
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">

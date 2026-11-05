@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Pencil, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Pencil, Trash2, ExternalLink, Eye } from 'lucide-react'
+import { ImageField } from '@/components/admin/image-field'
+import { ImageUploadButton } from '@/components/admin/image-upload-button'
+import { ImagePickerDialog } from '@/components/admin/image-picker-dialog'
+import { parseGallery, projectPath } from '@/lib/projects'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -31,26 +35,49 @@ import {
 
 type Project = {
   id: string
+  slug: string | null
   name: string
   url: string
   description: string | null
   image: string | null
+  role: string | null
+  period: string | null
+  tags: string | null
+  gallery: string | null
+  content: string | null
   createdAt: string
   updatedAt: string
 }
 
 type ProjectForm = {
   name: string
+  slug: string
   url: string
   description: string
   image: string
+  role: string
+  period: string
+  tags: string
+  gallery: string
+  content: string
 }
 
 const emptyForm: ProjectForm = {
   name: '',
+  slug: '',
   url: '',
   description: '',
   image: '',
+  role: '',
+  period: '',
+  tags: '',
+  gallery: '',
+  content: '',
+}
+
+function appendLine(text: string, line: string) {
+  const trimmed = text.replace(/\s+$/, '')
+  return trimmed ? `${trimmed}\n${line}` : line
 }
 
 export default function AdminWorksPage() {
@@ -95,22 +122,23 @@ export default function AdminWorksPage() {
     setEditingProject(project)
     setFormData({
       name: project.name || '',
+      slug: project.slug || '',
       url: project.url || '',
       description: project.description || '',
       image: project.image || '',
+      role: project.role || '',
+      period: project.period || '',
+      tags: project.tags || '',
+      gallery: project.gallery || '',
+      content: project.content || '',
     })
     setDialogOpen(true)
   }
 
   const handleSave = async () => {
     const name = formData.name.trim()
-    const url = formData.url.trim()
     if (!name) {
-      toast({ title: '提示', description: '请填写项目名称', variant: 'destructive' })
-      return
-    }
-    if (!url) {
-      toast({ title: '提示', description: '请填写项目链接', variant: 'destructive' })
+      toast({ title: '提示', description: '请填写作品名称', variant: 'destructive' })
       return
     }
 
@@ -121,12 +149,7 @@ export default function AdminWorksPage() {
       const res = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          url,
-          description: formData.description,
-          image: formData.image,
-        }),
+        body: JSON.stringify({ ...formData, name }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -170,7 +193,7 @@ export default function AdminWorksPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">作品展示</h1>
-          <p className="text-muted-foreground">管理「作品」页面中展示的项目</p>
+          <p className="text-muted-foreground">首页横向展示，点开进入作品详情页</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-2 h-4 w-4" />
@@ -204,15 +227,27 @@ export default function AdminWorksPage() {
                   {project.description && (
                     <p className="text-sm text-muted-foreground line-clamp-3">{project.description}</p>
                   )}
-                  <Link
-                    href={project.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    访问项目
-                  </Link>
+                  <div className="flex flex-wrap items-center gap-3 text-sm">
+                    <Link
+                      href={projectPath(project)}
+                      target="_blank"
+                      className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400"
+                    >
+                      <Eye className="h-3 w-3" />
+                      查看详情页
+                    </Link>
+                    {project.url && (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-muted-foreground"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        访问链接
+                      </a>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="flex items-center justify-end gap-2">
                   <Button variant="outline" size="sm" onClick={() => openEdit(project)}>
@@ -252,23 +287,85 @@ export default function AdminWorksPage() {
       )}
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{editingProject ? '编辑作品' : '新增作品'}</DialogTitle>
-            <DialogDescription>填写项目名称、链接、简介与封面图，展示到「作品」页面和首页。</DialogDescription>
+            <DialogDescription>
+              首页横向展示封面、名称和简介；点开是详情页，展示下面所有内容。图片都可以直接上传、拖进来或 Ctrl+V 粘贴。
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="project-name">作品名称</Label>
+                <Input
+                  id="project-name"
+                  placeholder="例如：个人作品集网站"
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="project-slug">详情页路径（可选）</Label>
+                <Input
+                  id="project-slug"
+                  placeholder="例如：portfolio，不填用编号"
+                  value={formData.slug}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                />
+              </div>
+            </div>
             <div className="space-y-2">
-              <Label htmlFor="project-name">项目名称</Label>
-              <Input
-                id="project-name"
-                placeholder="例如：个人作品集网站"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              <Label htmlFor="project-description">一句话简介</Label>
+              <Textarea
+                id="project-description"
+                rows={2}
+                placeholder="显示在卡片和详情页标题下"
+                value={formData.description}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-url">项目链接</Label>
+              <Label htmlFor="project-image">封面</Label>
+              <ImageField
+                id="project-image"
+                value={formData.image}
+                onChange={(url) => setFormData((prev) => ({ ...prev, image: url }))}
+                pickerTitle="选择作品封面"
+              />
+              <p className="text-xs text-muted-foreground">不填则用作品名首字</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="project-role">担任角色</Label>
+                <Input
+                  id="project-role"
+                  placeholder="例如：独立开发 / 前端负责人"
+                  value={formData.role}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="project-period">时间</Label>
+                <Input
+                  id="project-period"
+                  placeholder="例如：2025.03 – 2025.06"
+                  value={formData.period}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, period: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-tags">标签</Label>
+              <Input
+                id="project-tags"
+                placeholder="用逗号分隔，例如：Next.js, 设计, 开源"
+                value={formData.tags}
+                onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="project-url">访问链接（可选）</Label>
               <Input
                 id="project-url"
                 placeholder="https://example.com"
@@ -277,23 +374,45 @@ export default function AdminWorksPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-image">项目图片</Label>
-              <Input
-                id="project-image"
-                placeholder="https://example.com/cover.jpg"
-                value={formData.image}
-                onChange={(e) => setFormData((prev) => ({ ...prev, image: e.target.value }))}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label htmlFor="project-gallery">截图画廊</Label>
+                <div className="flex gap-2">
+                  <ImageUploadButton
+                    multiple
+                    label="上传截图"
+                    onUploaded={(url) => setFormData((prev) => ({ ...prev, gallery: appendLine(prev.gallery, url) }))}
+                  />
+                  <ImagePickerDialog
+                    title="添加截图"
+                    triggerText="图库"
+                    onSelect={(url) => setFormData((prev) => ({ ...prev, gallery: appendLine(prev.gallery, url) }))}
+                  />
+                </div>
+              </div>
+              <Textarea
+                id="project-gallery"
+                rows={3}
+                className="font-mono text-xs"
+                placeholder="每行一个图片地址，可多选上传"
+                value={formData.gallery}
+                onChange={(e) => setFormData((prev) => ({ ...prev, gallery: e.target.value }))}
               />
-              <p className="text-xs text-muted-foreground">不填则自动使用项目首字</p>
+              {parseGallery(formData.gallery).length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {parseGallery(formData.gallery).map((src, index) => (
+                    <img key={`${src}-${index}`} src={src} alt="" className="h-14 w-20 rounded border object-cover" />
+                  ))}
+                </div>
+              )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project-description">项目简介</Label>
+              <Label htmlFor="project-content">介绍正文（Markdown）</Label>
               <Textarea
-                id="project-description"
-                rows={4}
-                placeholder="简短描述你的项目特色"
-                value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                id="project-content"
+                rows={8}
+                placeholder={'## 背景\n\n## 我做了什么\n\n## 结果'}
+                value={formData.content}
+                onChange={(e) => setFormData((prev) => ({ ...prev, content: e.target.value }))}
               />
             </div>
           </div>

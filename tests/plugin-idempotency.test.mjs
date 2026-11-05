@@ -9,7 +9,7 @@ import { promisify } from 'node:util'
 
 let directory, prisma, getPluginPostWriter, idem, user, key
 before(async () => {
-  directory = await mkdtemp(path.join(tmpdir(), 'papergrid-idempotency-'))
+  directory = await mkdtemp(path.join(tmpdir(), 'lagoon-idempotency-'))
   process.env.DATABASE_URL = `file:${directory}/test.db`
   process.env.MEDIA_ROOT = path.join(directory, 'uploads')
   const db = new DatabaseSync(path.join(directory, 'test.db'))

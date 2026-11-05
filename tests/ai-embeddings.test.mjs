@@ -89,7 +89,7 @@ test('全部或部分重建失败都返回失败原因，成功和空索引保�
 })
 
 test('旧的重建记录即使标为 succeeded，有失败文档也必须向前端报告 failed', () => {
-  const history = globalThis.__papergridAiIndexTaskHistory
+  const history = globalThis.__lagoonAiIndexTaskHistory
   const original = history.slice()
   try {
     history.splice(0, history.length, {

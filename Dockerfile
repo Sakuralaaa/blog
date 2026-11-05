@@ -79,7 +79,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/prisma/template.db ./prisma/templ
 COPY --from=builder --chown=nextjs:nodejs /app/prisma/schema.prisma ./prisma/schema.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma/migrations ./prisma/migrations
 COPY --from=prisma-cli --chown=nextjs:nodejs /app/prisma-cli /app/prisma-cli
-COPY --chown=nextjs:nodejs scripts/bootstrap-admin.mjs scripts/upgrade-media.mjs scripts/media-references.mjs ./scripts/
+COPY --chown=nextjs:nodejs scripts/bootstrap-admin.mjs scripts/upgrade-media.mjs scripts/upgrade-settings.mjs scripts/media-references.mjs ./scripts/
 COPY --chown=nextjs:nodejs docker/entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh \

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import type { Metadata } from 'next'
 import { LayoutGrid } from 'lucide-react'
 import { PageHeader } from '@/components/layout/page-header'
-import { ProjectCard } from '@/components/projects/project-card'
+import { PROJECT_CARD_SELECT, ProjectCard } from '@/components/projects/project-card'
 
 export const revalidate = 60
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default async function ProjectsPage() {
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: 'desc' },
-    select: { id: true, name: true, url: true, description: true, image: true },
+    select: PROJECT_CARD_SELECT,
   })
 
   return (
