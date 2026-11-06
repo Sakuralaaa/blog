@@ -12,7 +12,7 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05']
-const SERVER_INFO = { name: 'lagoon', version: '1.4.7' }
+const SERVER_INFO = { name: 'lagoon', version: '1.4.8' }
 const INSTRUCTIONS = `个人网站（作品集 + 博客）。文章正文是 Markdown / MDX。
 - 新文章默认存为草稿（status=DRAFT），确认后再用 update_post 设 status=PUBLISHED 发布。
 - tags 传标签 ID 数组；先用 list_tags 查，没有就 create_tag。分类同理（list_categories / create_category）。

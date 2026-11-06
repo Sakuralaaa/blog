@@ -196,6 +196,13 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
   }
 
+  const shareImage = {
+    url: `/api/og/posts/${encodeURIComponent(post.slug)}?v=${new Date(post.updatedAt).getTime()}`,
+    width: 1200,
+    height: 630,
+    alt: post.title,
+  }
+
   return {
     title: post.title,
     description: post.excerpt || post.title,
@@ -207,13 +214,13 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       url: toCanonicalPath(`/posts/${slug}`),
       title: post.title,
       description: post.excerpt || post.title,
-      images: post.coverImage ? [post.coverImage] : [],
+      images: [shareImage],
     },
     twitter: {
-      card: post.coverImage ? 'summary_large_image' : 'summary',
+      card: 'summary_large_image',
       title: post.title,
       description: post.excerpt || post.title,
-      images: post.coverImage ? [post.coverImage] : [],
+      images: [shareImage],
     },
   }
 }

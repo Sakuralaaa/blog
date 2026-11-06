@@ -41,13 +41,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!project) return { title: '作品未找到' }
   const path = toCanonicalPath(projectPath(project))
   const description = project.description || project.name
-  const images = isSafeImageSrc(project.image) ? [project.image] : []
+  const images = [
+    {
+      url: `/api/og/projects/${encodeURIComponent(project.slug || project.id)}?v=${new Date(project.updatedAt).getTime()}`,
+      width: 1200,
+      height: 630,
+      alt: project.name,
+    },
+  ]
   return {
     title: project.name,
     description,
     alternates: { canonical: path },
     openGraph: { type: 'article', url: path, title: project.name, description, images },
-    twitter: { card: images.length ? 'summary_large_image' : 'summary', title: project.name, description, images },
+    twitter: { card: 'summary_large_image', title: project.name, description, images },
   }
 }
 

@@ -5,6 +5,9 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.4.8', date: '2026-11-07', highlights: [
+    '分享卡片：每篇文章、每个作品和首页自动生成 1200×630 的预览图（站名、分类、标题、摘要、系列与标签、日期），链接发到 Telegram、X、微信等处会显示成卡片。',
+  ] },
   { version: '1.4.7', date: '2026-11-07', highlights: [
     '正文里单个 $ 不再被当成行内公式（如「$100/$200」），行内公式请用 $$…$$。',
   ] },

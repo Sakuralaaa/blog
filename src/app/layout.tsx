@@ -43,11 +43,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: title,
       title,
       description,
+      images: [{ url: '/api/og/site', width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: ['/api/og/site'],
     },
     ...(faviconUrl ? { icons: { icon: faviconUrl } } : {}),
   }

@@ -54,7 +54,9 @@ export function proxy(request: NextRequest) {
   if (hstsHeader) response.headers.set('Strict-Transport-Security', hstsHeader)
   // The media handler chooses its cache policy only after checking access.
   const mediaRead = path.startsWith('/api/files/') && ['GET', 'HEAD'].includes(request.method)
-  if ((path.startsWith('/api/') && !mediaRead) || path.startsWith('/admin') || path.startsWith('/auth')) {
+  // Share cards are public images; the route sets its own cache policy.
+  const ogRead = path.startsWith('/api/og/') && ['GET', 'HEAD'].includes(request.method)
+  if ((path.startsWith('/api/') && !mediaRead && !ogRead) || path.startsWith('/admin') || path.startsWith('/auth')) {
     response.headers.set('Cache-Control', 'private, no-store')
   }
   return response

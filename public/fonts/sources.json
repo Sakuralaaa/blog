@@ -33,5 +33,12 @@
     "source": "https://fontsource.org/fonts/source-serif-4",
     "license": "OFL-1.1",
     "modifications": "None; latin + latin-ext wght subsets only."
+  },
+  "og": {
+    "family": "Noto Sans SC (static OTF, Regular + Bold)",
+    "version": "2.004 (notofonts/noto-cjk Sans/SubsetOTF/SC)",
+    "source": "https://github.com/notofonts/noto-cjk",
+    "license": "OFL-1.1",
+    "modifications": "Subset to ASCII + GB2312 + common CJK punctuation with fonttools pyftsubset, for share-card rendering only."
   }
 }
