@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Layers } from 'lucide-react'
 import { isSafeImageSrc } from '@/lib/utils'
 import { seriesHref } from '@/lib/post-series'
+import { WIDE_CARD_SIZES, mediaSrcSet } from '@/lib/media-srcset'
 import type { SeriesSummary } from '@/lib/series-groups'
 
 function formatDate(date: Date | null) {
@@ -25,7 +26,16 @@ export function SeriesCard({ series }: { series: SeriesSummary }) {
     <article className="card card--hover post-card series-card" data-cover={cover ? 'true' : undefined}>
       {cover && (
         <Link href={href} className="post-card__cover" tabIndex={-1} aria-hidden="true">
-          <img src={cover} alt="" width={640} height={360} loading="lazy" decoding="async" />
+          <img
+            src={cover}
+            srcSet={mediaSrcSet(cover)}
+            sizes={WIDE_CARD_SIZES}
+            alt=""
+            width={640}
+            height={360}
+            loading="lazy"
+            decoding="async"
+          />
         </Link>
       )}
       <div className="post-card__body">

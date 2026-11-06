@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useRef } from 'react'
 import { isSafeImageSrc } from '@/lib/utils'
+import { mediaSrcSet } from '@/lib/media-srcset'
 
 export interface ShowcaseItem {
   key: string
@@ -121,7 +122,15 @@ function ShowcaseCard({ item, clone, eager, tone }: { item: ShowcaseItem; clone:
       tabIndex={clone ? -1 : undefined}
     >
       {hasImage ? (
-        <img src={item.image!} alt="" loading={eager ? 'eager' : 'lazy'} decoding="async" draggable={false} />
+        <img
+          src={item.image!}
+          srcSet={mediaSrcSet(item.image)}
+          sizes="(max-width: 767px) 80vw, 320px"
+          alt=""
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          draggable={false}
+        />
       ) : (
         <span className="showcase-card__fallback" data-tone={tone} aria-hidden="true">
           {item.title}

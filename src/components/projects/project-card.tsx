@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
 import { isSafeImageSrc } from '@/lib/utils'
 import { parseTags, projectPath } from '@/lib/projects'
+import { CARD_SIZES, mediaSrcSet } from '@/lib/media-srcset'
 
 export interface ProjectEntry {
   id: string
@@ -34,7 +35,14 @@ export function ProjectCard({ project, priority = false }: { project: ProjectEnt
       <Link href={projectPath(project)} className="project-card__link">
         <div className="project-card__cover">
           {isSafeImageSrc(project.image) ? (
-            <img src={project.image} alt="" loading={priority ? 'eager' : 'lazy'} decoding="async" />
+            <img
+              src={project.image}
+              srcSet={mediaSrcSet(project.image)}
+              sizes={CARD_SIZES}
+              alt=""
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+            />
           ) : (
             <span className="project-card__placeholder" aria-hidden="true">
               {initial}

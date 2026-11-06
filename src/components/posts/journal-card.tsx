@@ -3,6 +3,7 @@ import { Eye } from 'lucide-react'
 import { PostMeta } from './post-meta'
 import { isSafeImageSrc } from '@/lib/utils'
 import { seriesHref } from '@/lib/post-series'
+import { CARD_SIZES, mediaSrcSet } from '@/lib/media-srcset'
 
 export interface JournalEntry {
   id: string
@@ -41,7 +42,16 @@ export function JournalCard({
     >
       {cover && (
         <Link href={`/posts/${post.slug}`} className="post-card__cover" tabIndex={-1} aria-hidden="true">
-          <img src={cover} alt="" width={640} height={360} loading="lazy" decoding="async" />
+          <img
+            src={cover}
+            srcSet={mediaSrcSet(cover)}
+            sizes={CARD_SIZES}
+            alt=""
+            width={640}
+            height={360}
+            loading="lazy"
+            decoding="async"
+          />
         </Link>
       )}
       <div className="post-card__body">

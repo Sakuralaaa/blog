@@ -13,6 +13,7 @@ import { createReadStream } from 'node:fs'
 import { access } from 'node:fs/promises'
 import { constants } from 'node:fs'
 import { Readable } from 'node:stream'
+import { canThumbnail, getThumbnail, parseThumbWidth } from '@/lib/media-thumbs'
 
 export const runtime = 'nodejs'
 
@@ -154,6 +155,26 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
     if (!file) {
       return NextResponse.json({ error: '文件不存在' }, { status: 404, headers: { 'Cache-Control': 'private, no-store' } })
+    }
+
+    const width = canThumbnail(file.mimeType) ? parseThumbWidth(new URL(request.url).searchParams.get('w')) : null
+    if (width) {
+      const thumbHeaders = buildHeaders(file, access)
+      if (file.sha256) thumbHeaders.set('ETag', `"${file.sha256}-w${width}"`)
+      const requestEtag = request.headers.get('if-none-match')
+      if (requestEtag && thumbHeaders.get('ETag') === requestEtag) {
+        return new NextResponse(null, { status: 304, headers: thumbHeaders })
+      }
+      const thumb = await getThumbnail(file, id, width).catch((error) => {
+        console.error('生成缩略图失败:', error)
+        return null
+      })
+      if (thumb) {
+        thumbHeaders.set('Content-Type', 'image/webp')
+        thumbHeaders.set('Content-Length', String(thumb.length))
+        return new NextResponse(new Uint8Array(thumb), { status: 200, headers: thumbHeaders })
+      }
+      // Already small enough (or not resizable): fall through to the original.
     }
 
     const headers = buildHeaders(file, access)
