@@ -174,7 +174,7 @@ NEXT_PUBLIC_DEFAULT_LOCALE="zh"
 # 自定义 Head 注入 – CSP 放行域名
 # 在管理后台「样式 → 自定义 Head 注入」添加外部脚本后，需将脚本域名加到此处，否则浏览器会因 CSP 拦截
 # HEAD_INJECT_SCRIPT_ORIGINS="https://stats.example.com,https://www.googletagmanager.com"
-# 可选：关闭 script-src 'unsafe-inline'（默认保留以兼容旧部署，确认无内联脚本后可设为 false）
+# 保持默认即可：Next.js 页面依赖内联脚本，且文章页为静态生成，设为 false 会导致页面无法运行
 # CSP_ALLOW_UNSAFE_INLINE_SCRIPT="false"
 ```
 
