@@ -12,6 +12,8 @@ import { getSetting } from '@/lib/settings'
 import { Suspense } from 'react'
 import { toCanonicalPath } from '@/lib/seo'
 import { normalizeSeriesName, SERIES_NAME_MAX } from '@/lib/post-series'
+import { getSeriesSummaries } from '@/lib/series-groups'
+import { SeriesCard } from '@/components/posts/series-card'
 
 export const revalidate = 60
 
@@ -131,11 +133,16 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     }
   }
 
-  const [totalPosts, allPublished, posts, categories, tags] = await Promise.all([
+  // Without a search or tag filter, a series shows as one card instead of every part.
+  const collapseSeries = !search && !tagSlug
+  const listWhere: Prisma.PostWhereInput = collapseSeries ? { ...where, series: null } : where
+
+  const [totalPosts, listTotal, allPublished, posts, categories, tags, seriesList] = await Promise.all([
     prisma.post.count({ where }),
+    prisma.post.count({ where: listWhere }),
     prisma.post.count({ where: { status: 'PUBLISHED' } }),
     prisma.post.findMany({
-      where,
+      where: listWhere,
       select: postCardSelect,
       orderBy: {
         publishedAt: 'desc',
@@ -180,9 +187,12 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
       },
       take: 20,
     }),
+    collapseSeries && page === 1
+      ? getSeriesSummaries(categorySlug ? { category: { slug: categorySlug } } : {})
+      : Promise.resolve([]),
   ])
 
-  const totalPages = Math.ceil(totalPosts / pageSize)
+  const totalPages = Math.ceil(listTotal / pageSize)
   const filtered = Boolean(search || categorySlug || tagSlug)
   const activeCategory = categories.find((c) => c.slug === categorySlug)
   // Tabs: categories that have posts, most posts first (the current one stays visible).
@@ -229,19 +239,32 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
             <PostFilters key={JSON.stringify(params)} categories={categories} tags={tags} />
           </Suspense>
         </div>
-        {posts.length === 0 ? (
+        {seriesList.length > 0 && (
+          <section className="series-section" aria-labelledby="posts-series">
+            <h2 id="posts-series" className="series-section__title">专题</h2>
+            <div className="post-grid">
+              {seriesList.map((item) => (
+                <SeriesCard key={item.name} series={item} />
+              ))}
+            </div>
+          </section>
+        )}
+        {posts.length === 0 && seriesList.length === 0 ? (
           <div className="card empty-state">
             <p>没有找到相关文章</p>
             <Link href="/posts" className="btn btn--sm">
               清除筛选条件
             </Link>
           </div>
-        ) : (
-          <div className="post-grid">
-            {posts.map((post) => (
-              <JournalCard key={post.id} post={post} />
-            ))}
-          </div>
+        ) : posts.length === 0 ? null : (
+          <>
+            {seriesList.length > 0 && <h2 className="series-section__title">文章</h2>}
+            <div className="post-grid">
+              {posts.map((post) => (
+                <JournalCard key={post.id} post={post} />
+              ))}
+            </div>
+          </>
         )}
         <PageLinks
           page={page}

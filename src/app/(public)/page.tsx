@@ -8,6 +8,9 @@ import { RecentCommentsTimeline } from '@/components/comments/recent-comments-ti
 import { JournalCard } from '@/components/posts/journal-card'
 import { ShowcaseMarquee, type ShowcaseItem } from '@/components/home/showcase-marquee'
 import { projectPath } from '@/lib/projects'
+import { collapseSeriesPosts, getSeriesSummaries } from '@/lib/series-groups'
+import { SeriesCard } from '@/components/posts/series-card'
+import { seriesHref } from '@/lib/post-series'
 
 export const revalidate = 60
 
@@ -20,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const [settings, projects, showcasePosts, latestPosts] = await Promise.all([
+  const [settings, projects, showcasePosts, latestPosts, seriesList] = await Promise.all([
     getPublicSettings(),
     prisma.project.findMany({
       orderBy: { createdAt: 'desc' },
@@ -30,12 +33,13 @@ export default async function HomePage() {
     prisma.post.findMany({
       where: { status: 'PUBLISHED' },
       orderBy: { publishedAt: 'desc' },
-      take: 12,
-      select: { id: true, slug: true, title: true, excerpt: true, coverImage: true, publishedAt: true, createdAt: true, isProtected: true },
+      take: 40,
+      select: { id: true, slug: true, title: true, excerpt: true, coverImage: true, publishedAt: true, createdAt: true, isProtected: true, series: true },
     }),
     prisma.post.findMany({
       where: {
         status: 'PUBLISHED',
+        series: null,
       },
       select: {
         id: true,
@@ -61,7 +65,9 @@ export default async function HomePage() {
       },
       take: 6,
     }),
+    getSeriesSummaries(),
   ])
+  const seriesByName = new Map(seriesList.map((item) => [item.name, item]))
 
   // A post that introduces a work (same slug or same cover image) is the same card twice
   // in the strip; keep the work and drop its write-up.
@@ -82,17 +88,31 @@ export default async function HomePage() {
         href: projectPath(project),
       },
     })),
-    ...showcasePosts.filter((post) => !isWorkWriteUp(post)).map((post) => ({
-      date: (post.publishedAt ?? post.createdAt).getTime(),
-      item: {
-        key: `post-${post.id}`,
-        kind: 'post' as const,
-        title: post.title,
-        subtitle: post.isProtected ? null : post.excerpt,
-        image: post.coverImage,
-        href: `/posts/${post.slug}`,
-      },
-    })),
+    ...collapseSeriesPosts(showcasePosts.filter((post) => !isWorkWriteUp(post)))
+      .slice(0, 12)
+      .map((post) => {
+        const series = post.series ? seriesByName.get(post.series) : undefined
+        return {
+          date: (post.publishedAt ?? post.createdAt).getTime(),
+          item: series
+            ? {
+                key: `series-${series.name}`,
+                kind: 'post' as const,
+                title: `专题 · ${series.name}`,
+                subtitle: `共 ${series.count} 篇`,
+                image: series.first.isProtected ? null : series.first.coverImage,
+                href: seriesHref(series.name),
+              }
+            : {
+                key: `post-${post.id}`,
+                kind: 'post' as const,
+                title: post.title,
+                subtitle: post.isProtected ? null : post.excerpt,
+                image: post.coverImage,
+                href: `/posts/${post.slug}`,
+              },
+        }
+      }),
   ]
     .sort((a, b) => b.date - a.date)
     .map(({ item }) => item)
@@ -125,14 +145,17 @@ export default async function HomePage() {
             全部文章 <ArrowRight size={15} aria-hidden="true" />
           </Link>
         </header>
-        {latestPosts.length === 0 ? (
+        {latestPosts.length === 0 && seriesList.length === 0 ? (
           <div className="card empty-state">
             <BookOpen size={24} aria-hidden="true" />
             <p>这里还没有文章。</p>
           </div>
         ) : (
           <div className="post-grid">
-            {latestPosts.map((post) => (
+            {seriesList.slice(0, 2).map((item) => (
+              <SeriesCard key={`series-${item.name}`} series={item} />
+            ))}
+            {latestPosts.slice(0, Math.max(0, 6 - Math.min(seriesList.length, 2))).map((post) => (
               <JournalCard key={post.id} post={post} />
             ))}
           </div>
