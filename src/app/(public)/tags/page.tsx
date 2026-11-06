@@ -4,7 +4,8 @@ import { Tag as TagIcon } from 'lucide-react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/layout/page-header'
 
-export const revalidate = 60
+// 动态渲染：避免 Docker 构建时用空模板库预渲染的页面在重启后被当作旧缓存返回
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: '文章标签',

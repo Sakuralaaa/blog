@@ -16,7 +16,8 @@ import { getSeriesSummaries } from '@/lib/series-groups'
 import { searchPostIds } from '@/lib/post-search'
 import { SeriesCard } from '@/components/posts/series-card'
 
-export const revalidate = 60
+// 动态渲染：避免 Docker 构建时用空模板库预渲染的页面在重启后被当作旧缓存返回
+export const dynamic = 'force-dynamic'
 
 interface PostsPageProps {
   searchParams: Promise<{
