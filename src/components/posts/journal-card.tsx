@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Eye } from 'lucide-react'
 import { PostMeta } from './post-meta'
 import { isSafeImageSrc } from '@/lib/utils'
+import { seriesHref } from '@/lib/post-series'
 
 export interface JournalEntry {
   id: string
@@ -16,6 +17,8 @@ export interface JournalEntry {
   category: { name: string; slug: string } | null
   postTags: { tag: { id: string; slug: string; name: string } }[]
   viewCount: { count: number | null } | null
+  series?: string | null
+  seriesOrder?: number | null
 }
 
 export function JournalCard({
@@ -54,6 +57,13 @@ export function JournalCard({
             isProtected={post.isProtected}
           />
         </div>
+        {post.series && (
+          <Link href={seriesHref(post.series)} className="post-card__series">
+            <span>系列</span>
+            {post.series}
+            {post.seriesOrder ? <em>{String(post.seriesOrder).padStart(2, '0')}</em> : null}
+          </Link>
+        )}
         <h3 className="post-card__title">
           <Link href={`/posts/${post.slug}`}>{post.title}</Link>
         </h3>

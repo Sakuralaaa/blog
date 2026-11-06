@@ -1854,3 +1854,77 @@ html[data-style='editorial'] .about__avatar {
     width: 62%;
   }
 }
+
+/* series line on post cards */
+.post-card__series {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  margin-top: 2px;
+  color: var(--c-muted);
+  font-size: 12.5px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.post-card__series span {
+  font-family: var(--label-font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: var(--label-track);
+  text-transform: var(--label-transform);
+  color: var(--c-faint);
+}
+.post-card__series em {
+  font: 600 12px/1 var(--f-mono);
+  font-style: normal;
+  color: var(--c-text);
+}
+.post-card__series:hover {
+  color: var(--c-link);
+}
+
+/* category tabs on the posts list */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.category-tabs a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: var(--bw) solid var(--c-line);
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  color: var(--c-muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+.category-tabs a:hover {
+  border-color: var(--c-edge);
+  color: var(--c-text);
+}
+.category-tabs a[aria-current='page'] {
+  border-color: var(--c-edge);
+  background: var(--c-text);
+  color: var(--c-bg);
+}
+.category-tabs small {
+  font: 500 12px/1 var(--f-mono);
+  opacity: 0.7;
+}
+.series-head__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+}

@@ -6,6 +6,7 @@ import { requireApiKey } from '@/lib/api-keys'
 import readingTime from 'reading-time'
 import bcrypt from 'bcryptjs'
 import { revalidatePublicPostPaths } from '@/lib/post-revalidate'
+import { parseSeriesInput } from '@/lib/post-series'
 
 const ALLOWED_POST_STATUS = new Set<PostStatus>([
   PostStatus.DRAFT,
@@ -147,6 +148,8 @@ export async function GET(
         publishedAt: true,
         readingTime: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         author: {
           select: {
             id: true,
@@ -212,6 +215,8 @@ export async function PATCH(
         slug: true,
         publishedAt: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         passwordHash: true,
         category: {
           select: {
@@ -247,6 +252,7 @@ export async function PATCH(
       isProtected,
       password,
     } = body
+    const seriesInput = parseSeriesInput(body)
 
     if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
       return NextResponse.json(
@@ -406,6 +412,7 @@ export async function PATCH(
               ? { disconnect: true }
               : { connect: { id: categoryValidation.resolvedCategoryId } },
         }),
+        ...seriesInput,
         ...(parsedIsProtected !== undefined && { isProtected: parsedIsProtected }),
         ...(passwordHashUpdate !== undefined && { passwordHash: passwordHashUpdate }),
         ...(parsedTags.shouldUpdate && {
@@ -428,6 +435,8 @@ export async function PATCH(
         publishedAt: true,
         readingTime: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         author: {
           select: {
             id: true,

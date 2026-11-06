@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache'
 import { prisma } from './prisma'
+import { sortSeriesPosts } from './post-series'
 
 export const POSTS_CONTENT_CACHE_TAG = 'posts:content'
 export const POSTS_LIST_CACHE_TAG = 'posts:list'
@@ -63,6 +64,8 @@ export async function getPublishedPostBySlug(slug: string) {
           readingTime: true,
           categoryId: true,
           isProtected: true,
+          series: true,
+          seriesOrder: true,
           author: {
             select: {
               name: true,
@@ -228,8 +231,37 @@ export async function getPublicPostPageData(slug: string) {
     post.category?.slug ?? null
   )
 
+  const seriesPosts = post.series ? await getSeriesPosts(post.series) : []
+
   return {
     post,
     ...relations,
+    seriesPosts,
   }
+}
+
+export type SeriesPostItem = {
+  id: string
+  title: string
+  slug: string
+  seriesOrder: number | null
+}
+
+/** Published posts of one series, in reading order (seriesOrder, then publish date). */
+export async function getSeriesPosts(series: string): Promise<SeriesPostItem[]> {
+  const name = series.trim()
+  if (!name) return []
+  return unstable_cache(
+    async () => {
+      const posts = await prisma.post.findMany({
+        where: { status: 'PUBLISHED', series: name },
+        select: { id: true, title: true, slug: true, seriesOrder: true, publishedAt: true },
+        orderBy: [{ publishedAt: 'asc' }, { id: 'asc' }],
+        take: 200,
+      })
+      return sortSeriesPosts(posts).map(({ id, title, slug, seriesOrder }) => ({ id, title, slug, seriesOrder }))
+    },
+    ['series-posts', name],
+    { tags: [POSTS_CONTENT_CACHE_TAG, POSTS_ORDER_CACHE_TAG], revalidate: false }
+  )()
 }

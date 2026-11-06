@@ -9,6 +9,7 @@ import { idempotencyIdentity, readIdempotentResult } from '@/lib/api-idempotency
 import readingTime from 'reading-time'
 import bcrypt from 'bcryptjs'
 import { revalidatePublicPostPaths } from '@/lib/post-revalidate'
+import { parseSeriesInput } from '@/lib/post-series'
 
 const ALLOWED_POST_STATUS = new Set<PostStatus>([
   PostStatus.DRAFT,
@@ -218,6 +219,8 @@ export async function GET(req: Request) {
         publishedAt: true,
         readingTime: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         author: {
           select: {
             id: true,
@@ -292,6 +295,7 @@ export async function POST(req: Request) {
       isProtected,
       password,
     } = body
+    const seriesInput = parseSeriesInput(body)
 
     const normalizedTitle = typeof title === 'string' ? title.trim() : ''
     if (!normalizedTitle) {
@@ -413,6 +417,7 @@ export async function POST(req: Request) {
         locale: parsedLocale || 'zh',
         authorId,
         categoryId: resolvedCategoryId,
+        ...seriesInput,
         isProtected: protectPost,
         passwordHash: passwordResult.passwordHash,
         ...(parsedCreatedAt ? { createdAt: parsedCreatedAt } : {}),
@@ -438,6 +443,8 @@ export async function POST(req: Request) {
         publishedAt: true,
         readingTime: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         author: {
           select: {
             id: true,

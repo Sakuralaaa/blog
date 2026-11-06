@@ -16,6 +16,7 @@ const SERVER_INFO = { name: 'lagoon', version: '1.4.1' }
 const INSTRUCTIONS = `个人网站（作品集 + 博客）。文章正文是 Markdown / MDX。
 - 新文章默认存为草稿（status=DRAFT），确认后再用 update_post 设 status=PUBLISHED 发布。
 - tags 传标签 ID 数组；先用 list_tags 查，没有就 create_tag。分类同理（list_categories / create_category）。
+- 分类表示文章类型（如 教程 / 项目推荐 / 我的项目 / 随笔），主题用标签。连载文章填 series（系列名）和 seriesOrder（第几篇），前台会自动生成系列目录和上下篇。
 - 图片先用 upload_image 上传，再把返回的 url 写进正文或 coverImage。
 - 「作品」页（/projects，首页也会展示精选作品）用 list_projects / create_project / update_project / delete_project 管理；image 填封面图 url。
 - 以下工具需要密钥带「完全管理」(ADMIN_FULL) 权限：
@@ -41,6 +42,8 @@ const postFields = {
   coverImage: { ...str, description: '封面图 URL' },
   status: { type: 'string', enum: ['DRAFT', 'PUBLISHED', 'ARCHIVED'] },
   categoryId: { ...str, description: '分类 ID' },
+  series: { type: ['string', 'null'], description: '系列名，同名的文章归为一个系列；传 null 或空串移出系列' },
+  seriesOrder: { type: ['integer', 'null'], minimum: 1, maximum: 9999, description: '在系列里的序号（第几篇），从 1 开始' },
   tags: { type: 'array', items: str, description: '标签 ID 数组' },
   locale: { type: 'string', enum: ['zh', 'en'] },
 }

@@ -9,6 +9,7 @@ import { PostPasswordGate } from '@/components/posts/post-password-gate'
 import { ViewCount } from '@/components/posts/view-count'
 import { extractHeadingsFromMarkdown, stripLeadingTitle } from '@/lib/markdown'
 import { MDXContentClient } from '@/components/posts/mdx-content-client'
+import type { SeriesNavData } from '@/components/posts/series-nav'
 
 const UNLOCK_STORAGE_PREFIX = 'pg_post_unlock_'
 
@@ -63,6 +64,7 @@ interface ProtectedPostPageProps {
   ownerName: string
   ownerRole: string
   defaultAvatarUrl: string
+  series?: SeriesNavData | null
 }
 
 function getStorageKey(postId: string) {
@@ -79,6 +81,7 @@ export function ProtectedPostPage({
   ownerName,
   ownerRole,
   defaultAvatarUrl,
+  series = null,
 }: ProtectedPostPageProps) {
   const [content, setContent] = useState<string | null>(null)
   const [headings, setHeadings] = useState<HeadingItem[]>([])
@@ -173,6 +176,7 @@ export function ProtectedPostPage({
         prevPost={prevPost}
         nextPost={nextPost}
         relatedPosts={relatedPosts}
+        series={series}
         author={{
           name: ownerName || post.author.name || '',
           role: ownerRole,

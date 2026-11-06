@@ -85,6 +85,8 @@ function PostEditorContent() {
     status: 'DRAFT' as PostStatusValue,
     locale: 'zh',
     categoryId: '',
+    series: '',
+    seriesOrder: '',
     createdAt: '',
     publishedAt: '',
     isProtected: false,
@@ -92,6 +94,7 @@ function PostEditorContent() {
   })
 
   const [categories, setCategories] = useState<CategoryOption[]>([])
+  const [seriesOptions, setSeriesOptions] = useState<{ name: string; posts: number; maxOrder: number }[]>([])
   const [tags, setTags] = useState<TagOption[]>([])
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
   const [metaInfo, setMetaInfo] = useState<{ createdAt?: string; updatedAt?: string }>({})
@@ -146,6 +149,16 @@ function PostEditorContent() {
       })
   }, [])
 
+  // 加载已有系列（用于输入提示和自动填序号）
+  useEffect(() => {
+    fetch('/api/admin/series')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data?.series)) setSeriesOptions(data.series)
+      })
+      .catch(() => {})
+  }, [])
+
   // 加载标签列表
   useEffect(() => {
     fetch('/api/tags')
@@ -195,6 +208,8 @@ function PostEditorContent() {
               status: data.post.status,
               locale: data.post.locale,
               categoryId: data.post.categoryId || '',
+              series: data.post.series || '',
+              seriesOrder: data.post.seriesOrder ? String(data.post.seriesOrder) : '',
               createdAt: toInputDateTime(data.post.createdAt),
               publishedAt: toInputDateTime(data.post.publishedAt),
               isProtected: Boolean(data.post.isProtected),
@@ -305,6 +320,8 @@ function PostEditorContent() {
         publishedAt: toIsoDateTime(formData.publishedAt),
         status: targetStatus,
         tags: selectedTagIds,
+        series: formData.series.trim() || null,
+        seriesOrder: formData.series.trim() && formData.seriesOrder.trim() ? Number(formData.seriesOrder) : null,
       }
 
       if (!formData.isProtected) {
@@ -490,6 +507,50 @@ function PostEditorContent() {
                 rows={3}
                 disabled={saving}
               />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-[1fr_160px]">
+              <div className="space-y-2">
+                <Label htmlFor="series">系列（可选）</Label>
+                <Input
+                  id="series"
+                  list="series-options"
+                  value={formData.series}
+                  onChange={(e) => {
+                    const name = e.target.value
+                    const known = seriesOptions.find((item) => item.name === name.trim())
+                    setFormData((prev) => ({
+                      ...prev,
+                      series: name,
+                      // Picking an existing series suggests the next part number.
+                      seriesOrder: known && !prev.seriesOrder ? String(known.maxOrder + 1) : prev.seriesOrder,
+                    }))
+                  }}
+                  placeholder="例如：AI 上手全流程；同名文章归为一个系列"
+                  maxLength={80}
+                  disabled={saving}
+                />
+                <datalist id="series-options">
+                  {seriesOptions.map((item) => (
+                    <option key={item.name} value={item.name}>
+                      {`${item.posts} 篇`}
+                    </option>
+                  ))}
+                </datalist>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="seriesOrder">第几篇</Label>
+                <Input
+                  id="seriesOrder"
+                  type="number"
+                  min={1}
+                  max={9999}
+                  value={formData.seriesOrder}
+                  onChange={(e) => setFormData({ ...formData, seriesOrder: e.target.value })}
+                  placeholder="1"
+                  disabled={saving || !formData.series.trim()}
+                />
+              </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">

@@ -20,7 +20,8 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') || '')
-  const [category, setCategory] = useState(searchParams.get('category') || 'all')
+  // Category is picked with the tabs above; keep it while searching or picking a tag.
+  const category = searchParams.get('category') || 'all'
   const [tag, setTag] = useState(searchParams.get('tag') || 'all')
 
   const handleFilter = () => {
@@ -33,7 +34,6 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
 
   const handleClear = () => {
     setSearch('')
-    setCategory('all')
     setTag('all')
     router.push('/posts')
   }
@@ -51,25 +51,6 @@ export function PostFilters({ categories, tags }: PostFiltersProps) {
             onKeyDown={(e) => e.key === 'Enter' && handleFilter()}
           />
         </div>
-
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger
-            aria-label="文章分类"
-            className="post-filters__select"
-          >
-            <SelectValue placeholder="选择分类" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              全部分类
-            </SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.slug} value={cat.slug}>
-                {cat.name} ({cat._count.posts})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         <Select value={tag} onValueChange={setTag}>
           <SelectTrigger

@@ -48,6 +48,8 @@ export default async function HomePage() {
         isProtected: true,
         author: { select: { name: true } },
         category: { select: { id: true, name: true, slug: true } },
+        series: true,
+        seriesOrder: true,
         postTags: {
           select: { tag: { select: { id: true, name: true, slug: true } } },
           take: 5,
@@ -61,6 +63,13 @@ export default async function HomePage() {
     }),
   ])
 
+  // A post that introduces a work (same slug or same cover image) is the same card twice
+  // in the strip; keep the work and drop its write-up.
+  const workSlugs = new Set(projects.map((project) => project.slug).filter(Boolean))
+  const workImages = new Set(projects.map((project) => project.image?.trim()).filter(Boolean))
+  const isWorkWriteUp = (post: { slug: string; coverImage: string | null }) =>
+    workSlugs.has(post.slug) || Boolean(post.coverImage && workImages.has(post.coverImage.trim()))
+
   const showcase: ShowcaseItem[] = [
     ...projects.map((project) => ({
       date: project.createdAt.getTime(),
@@ -73,7 +82,7 @@ export default async function HomePage() {
         href: projectPath(project),
       },
     })),
-    ...showcasePosts.map((post) => ({
+    ...showcasePosts.filter((post) => !isWorkWriteUp(post)).map((post) => ({
       date: (post.publishedAt ?? post.createdAt).getTime(),
       item: {
         key: `post-${post.id}`,

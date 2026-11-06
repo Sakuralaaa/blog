@@ -152,6 +152,8 @@ model Post {
   readingTime Int?       // in minutes
   isProtected Boolean    @default(false)
   passwordHash String?
+  series      String?    // 系列名（同名即同一系列）
+  seriesOrder Int?       // 系列内序号，从 1 开始
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -162,6 +164,7 @@ model Post {
   @@index([locale])
   @@index([status, publishedAt, id])
   @@index([status, categoryId, publishedAt])
+  @@index([series, seriesOrder])
 }
 
 model Comment {

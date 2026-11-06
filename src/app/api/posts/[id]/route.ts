@@ -7,6 +7,7 @@ import { PostStatus } from '@prisma/client'
 import readingTime from 'reading-time'
 import bcrypt from 'bcryptjs'
 import { revalidatePublicPostPaths } from '@/lib/post-revalidate'
+import { parseSeriesInput } from '@/lib/post-series'
 
 // GET /api/posts/[id] - 获取单个文章
 export async function GET(
@@ -39,6 +40,8 @@ export async function GET(
         readingTime: true,
         categoryId: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         passwordHash: true,
         author: {
           select: {
@@ -138,6 +141,7 @@ export async function PATCH(
 
     const body = await readJsonBody(req)
     validatePostInput(body, true)
+    const seriesInput = parseSeriesInput(body)
     const {
       title,
       content,
@@ -240,6 +244,7 @@ export async function PATCH(
         ...(parsedCreatedAt ? { createdAt: parsedCreatedAt } : {}),
         ...(hasPublishedAtField || status !== undefined ? { publishedAt: nextPublishedAt } : {}),
         ...(normalizedCategoryId !== undefined && { categoryId: normalizedCategoryId }),
+        ...seriesInput,
         ...(typeof isProtected === 'boolean' && { isProtected }),
         ...(passwordHashUpdate !== undefined && { passwordHash: passwordHashUpdate }),
         ...(tags && {
@@ -266,6 +271,8 @@ export async function PATCH(
         readingTime: true,
         categoryId: true,
         isProtected: true,
+        series: true,
+        seriesOrder: true,
         author: {
           select: {
             id: true,

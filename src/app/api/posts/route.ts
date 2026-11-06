@@ -1,4 +1,5 @@
 import { validatePostInput } from '@/lib/post-input'
+import { parseSeriesInput } from '@/lib/post-series'
 import { pageNumber, pageSize } from '@/lib/pagination'
 import { RequestBodyError, bodyErrorResponse, readJsonBody } from '@/lib/request-body'
 import { prisma, postWriter } from '@/lib/prisma'
@@ -127,6 +128,7 @@ export async function POST(req: Request) {
 
     const body = await readJsonBody(req)
     validatePostInput(body, false)
+    const seriesInput = parseSeriesInput(body)
     const {
       title,
       content,
@@ -214,6 +216,7 @@ export async function POST(req: Request) {
         locale: locale || 'zh',
         authorId: session.user.id,
         categoryId: resolvedCategoryId,
+        ...seriesInput,
         isProtected: protectPost,
         passwordHash,
         ...(parsedCreatedAt ? { createdAt: parsedCreatedAt } : {}),

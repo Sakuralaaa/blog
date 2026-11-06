@@ -11,6 +11,7 @@ import { ViewCount } from '@/components/posts/view-count'
 import { extractHeadingsFromMarkdown, stripLeadingTitle } from '@/lib/markdown'
 import { ProtectedPostPage } from '@/components/posts/protected-post-page'
 import { toCanonicalPath } from '@/lib/seo'
+import { seriesNeighbours, type SeriesNavData } from '@/components/posts/series-nav'
 import {
   getPublicPostPageData,
   getPublishedPostBySlug,
@@ -63,7 +64,14 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound()
   }
 
-  const { post: basePost, prevPost, nextPost, relatedPosts } = postData
+  const { post: basePost, relatedPosts, seriesPosts } = postData
+  const series: SeriesNavData | null =
+    basePost.series && seriesPosts.length > 1
+      ? { name: basePost.series, currentSlug: basePost.slug, posts: seriesPosts }
+      : null
+  const inSeries = seriesNeighbours(series)
+  const prevPost = inSeries ? inSeries.prevPost : postData.prevPost
+  const nextPost = inSeries ? inSeries.nextPost : postData.nextPost
 
   if (basePost.isProtected) {
     const { content, ...safePost } = basePost
@@ -88,6 +96,7 @@ export default async function PostPage({ params }: PostPageProps) {
         ownerName={ownerName}
         ownerRole={ownerRole}
         defaultAvatarUrl={defaultAvatarUrl || ''}
+        series={series}
       />
     )
   }
@@ -119,6 +128,7 @@ export default async function PostPage({ params }: PostPageProps) {
         prevPost={prevPost}
         nextPost={nextPost}
         relatedPosts={relatedPostsWithLabels}
+        series={series}
         author={{
           name: ownerName || post.author.name || '',
           role: ownerRole,

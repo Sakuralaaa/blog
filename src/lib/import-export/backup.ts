@@ -1,6 +1,7 @@
 import { PostStatus, Prisma } from '@prisma/client'
 import readingTime from 'reading-time'
 import { prisma, postWriter } from '@/lib/prisma'
+import { SERIES_NAME_MAX, SERIES_ORDER_MAX, normalizeSeriesName } from '@/lib/post-series'
 
 type Counter = {
   created: number
@@ -65,6 +66,8 @@ export type BackupPayload = {
       passwordHash?: string | null
       categorySlug: string | null
       tagSlugs: string[]
+      series?: string | null
+      seriesOrder?: number | null
     }>
     settings: Array<{
       key: string
@@ -308,6 +311,8 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
         updatedAt: true,
         isProtected: true,
         passwordHash: true,
+        series: true,
+        seriesOrder: true,
         category: {
           select: {
             slug: true,
@@ -397,6 +402,8 @@ export async function exportBackupData(includeSensitive: boolean): Promise<Backu
         ...(includeSensitive ? { passwordHash: item.passwordHash } : {}),
         categorySlug: item.category?.slug || null,
         tagSlugs: item.postTags.map((pt) => pt.tag.slug),
+        series: item.series,
+        seriesOrder: item.seriesOrder,
       })),
       settings: settings.map((item) => ({
         key: item.key,
@@ -821,6 +828,8 @@ export async function importBackupData(input: {
     const publishedAt = pickDate(item.publishedAt)
     const categorySlug = pickString(item.categorySlug, 120)
     const tagSlugsInPost = toStringArray(item.tagSlugs, 120)
+    // Older backups have no series keys: leave existing series untouched in that case.
+    const seriesData = readBackupSeries(item)
     const wantsProtected = item.isProtected === true
     const rawImportedPasswordHash = includeSensitive
       ? pickLongString(item.passwordHash, 255)
@@ -914,6 +923,7 @@ export async function importBackupData(input: {
             status,
             locale,
             categoryId,
+            ...seriesData,
             isProtected,
             passwordHash,
             readingTime: Math.max(1, Math.round(readingTime(content).minutes)),
@@ -944,6 +954,7 @@ export async function importBackupData(input: {
             status,
             locale,
             categoryId,
+            ...seriesData,
             authorId: userId,
             isProtected,
             passwordHash,
@@ -986,4 +997,17 @@ export async function importBackupData(input: {
 
 export function parseBooleanFlag(input: string | null | undefined) {
   return toBooleanFlag(input)
+}
+
+function readBackupSeries(item: Record<string, unknown>): { series?: string | null; seriesOrder?: number | null } {
+  const out: { series?: string | null; seriesOrder?: number | null } = {}
+  if ('series' in item) {
+    const name = typeof item.series === 'string' ? normalizeSeriesName(item.series).slice(0, SERIES_NAME_MAX) : ''
+    out.series = name || null
+  }
+  if ('seriesOrder' in item) {
+    const order = item.seriesOrder
+    out.seriesOrder = typeof order === 'number' && Number.isInteger(order) && order >= 1 && order <= SERIES_ORDER_MAX ? order : null
+  }
+  return out
 }

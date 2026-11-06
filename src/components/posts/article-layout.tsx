@@ -6,6 +6,7 @@ import { TableOfContents, type HeadingItem } from '@/components/posts/table-of-c
 import { RelatedPostsList, type RelatedPostsListItem } from '@/components/posts/related-posts-list'
 import { isInternalImageUrl } from '@/lib/image-url'
 import { isSafeImageSrc } from '@/lib/utils'
+import { SeriesNav, type SeriesNavData } from '@/components/posts/series-nav'
 
 type SimplePost = { id: string; title: string; slug: string } | null
 
@@ -22,6 +23,7 @@ export function ArticleLayout({
   author,
   children,
   comments,
+  series = null,
 }: {
   post: {
     title: string
@@ -42,6 +44,7 @@ export function ArticleLayout({
   author: { name: string; role: string; avatar: string }
   children: ReactNode
   comments?: ReactNode
+  series?: SeriesNavData | null
 }) {
   const cover = isSafeImageSrc(post.coverImage) ? post.coverImage : null
   return (
@@ -100,6 +103,7 @@ export function ArticleLayout({
 
       <div className="article-body container" data-toc={headings.length > 0 || undefined}>
         <div className="article-main">
+          {series && <SeriesNav series={series} />}
           {cover && (
             <figure className="article-cover">
               {isInternalImageUrl(cover) ? (
@@ -124,7 +128,7 @@ export function ArticleLayout({
               {prevPost ? (
                 <Link href={`/posts/${prevPost.slug}`} className="card card--hover">
                   <span>
-                    <ArrowLeft size={14} aria-hidden="true" /> 上一篇
+                    <ArrowLeft size={14} aria-hidden="true" /> {series ? '系列上一篇' : '上一篇'}
                   </span>
                   <strong>{prevPost.title}</strong>
                 </Link>
@@ -134,7 +138,7 @@ export function ArticleLayout({
               {nextPost ? (
                 <Link href={`/posts/${nextPost.slug}`} className="card card--hover article-pager__next">
                   <span>
-                    下一篇 <ArrowRight size={14} aria-hidden="true" />
+                    {series ? '系列下一篇' : '下一篇'} <ArrowRight size={14} aria-hidden="true" />
                   </span>
                   <strong>{nextPost.title}</strong>
                 </Link>
