@@ -18,13 +18,15 @@
 :root,
 html[data-style='atoll'] {
   color-scheme: light;
+  /* CJK: the system's own Chinese font first (PingFang, YaHei, Android's Noto CJK), so most
+     visitors never download the self-hosted Noto Sans SC shards; it stays as the fallback. */
   --f-sans:
-    'Inter Variable', 'Noto Sans SC Variable', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
-    system-ui, sans-serif;
+    'Inter Variable', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC',
+    'Source Han Sans SC', 'Noto Sans SC Variable', system-ui, sans-serif;
   --f-heading: var(--f-sans);
-  --f-reading: 'Inter Variable', 'Noto Sans SC Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --f-reading: 'Inter Variable', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC Variable', sans-serif;
   --f-mono:
-    'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Noto Sans SC Variable',
+    'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC Variable',
     monospace;
   --w-heading: 750;
   --w-display: 850;
@@ -226,9 +228,9 @@ html.dark[data-style='minimal'] {
 html[data-style='editorial'] {
   color-scheme: light;
   --f-heading:
-    'Source Serif 4 Variable', 'Noto Serif SC Variable', 'Songti SC', 'STSong', 'SimSun', serif;
+    'Source Serif 4 Variable', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', 'Noto Serif SC Variable', 'STSong', 'SimSun', serif;
   --f-reading:
-    'Inter Variable', 'Noto Sans SC Variable', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    'Inter Variable', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC Variable', sans-serif;
   --w-heading: 700;
   --w-display: 700;
   --track-heading: -0.012em;
