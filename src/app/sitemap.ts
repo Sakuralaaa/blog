@@ -51,7 +51,7 @@ const STATIC_ROUTES: Array<{
 ]
 
 async function getSitemapCounts() {
-  const [postsCount, categoriesCount, tagsCount] = await Promise.all([
+  const [postsCount, categoriesCount, tagsCount, projectsCount] = await Promise.all([
     prisma.post.count({
       where: {
         status: 'PUBLISHED',
@@ -80,6 +80,7 @@ async function getSitemapCounts() {
         },
       },
     }),
+    prisma.project.count({ where: { slug: { not: null } } }),
   ])
 
   return {
@@ -87,6 +88,7 @@ async function getSitemapCounts() {
     postsCount,
     categoriesCount,
     tagsCount,
+    projectsCount,
   }
 }
 
@@ -97,7 +99,7 @@ const getSitemapCountsCached = unstable_cache(getSitemapCounts, ['sitemap-counts
 
 export async function generateSitemaps() {
   const counts = await getSitemapCountsCached()
-  const totalCount = counts.staticCount + counts.postsCount + counts.categoriesCount + counts.tagsCount
+  const totalCount = counts.staticCount + counts.postsCount + counts.categoriesCount + counts.tagsCount + counts.projectsCount
   const totalSitemaps = Math.max(1, Math.ceil(totalCount / MAX_URLS_PER_SITEMAP))
 
   return Array.from({ length: totalSitemaps }, (_, id) => ({ id }))
@@ -108,7 +110,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   if (!/^(0|[1-9]\d*)$/.test(resolvedId)) return []
   const page = Number(resolvedId)
   const counts = await getSitemapCountsCached()
-  const totalCount = counts.staticCount + counts.postsCount + counts.categoriesCount + counts.tagsCount
+  const totalCount = counts.staticCount + counts.postsCount + counts.categoriesCount + counts.tagsCount + counts.projectsCount
   const totalSitemaps = Math.max(1, Math.ceil(totalCount / MAX_URLS_PER_SITEMAP))
 
   if (!Number.isSafeInteger(page) || page >= totalSitemaps) {
@@ -233,6 +235,30 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
           url: toUrl(`/tags/${tag.slug}`),
         lastModified: tag.updatedAt || undefined,
         changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      }))
+    )
+  }
+  cursor = tagRangeEnd
+
+  const projectRangeStart = cursor
+  const projectRangeEnd = cursor + counts.projectsCount
+  const projectStart = Math.max(dynamicStart, projectRangeStart)
+  const projectEnd = Math.min(dynamicEnd, projectRangeEnd)
+  if (projectEnd > projectStart) {
+    const projects = await prisma.project.findMany({
+      where: { slug: { not: null } },
+      select: { slug: true, updatedAt: true },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+      skip: projectStart - projectRangeStart,
+      take: projectEnd - projectStart,
+    })
+
+    routes.push(
+      ...projects.map((project) => ({
+        url: toUrl(`/projects/${project.slug}`),
+        lastModified: project.updatedAt || undefined,
+        changeFrequency: 'monthly' as const,
         priority: 0.6,
       }))
     )

@@ -10,7 +10,8 @@ import { getPostPageSettings } from '@/lib/settings'
 import { ViewCount } from '@/components/posts/view-count'
 import { extractHeadingsFromMarkdown, stripLeadingTitle } from '@/lib/markdown'
 import { ProtectedPostPage } from '@/components/posts/protected-post-page'
-import { toCanonicalPath } from '@/lib/seo'
+import { getSiteUrl, toCanonicalPath } from '@/lib/seo'
+import { serializeJsonLd } from '@/lib/feed'
 import { seriesNeighbours, type SeriesNavData } from '@/components/posts/series-nav'
 import {
   getPublicPostPageData,
@@ -116,8 +117,41 @@ export default async function PostPage({ params }: PostPageProps) {
     })
   )
 
+  const siteOrigin = getSiteUrl().origin
+  const absolute = (value?: string | null) => {
+    if (!value) return undefined
+    try {
+      return new URL(value, siteOrigin).toString()
+    } catch {
+      return undefined
+    }
+  }
+  const postUrl = `${siteOrigin}/posts/${encodeURIComponent(post.slug)}`
+  const authorName = ownerName || post.author.name || ''
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt || undefined,
+    url: postUrl,
+    mainEntityOfPage: postUrl,
+    image: absolute(post.coverImage),
+    datePublished: post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+    dateModified: post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined,
+    author: authorName ? { '@type': 'Person', name: authorName } : undefined,
+    isPartOf: series
+      ? {
+          '@type': 'CreativeWorkSeries',
+          name: series.name,
+          url: `${siteOrigin}/posts?series=${encodeURIComponent(series.name)}`,
+        }
+      : undefined,
+    position: series && post.seriesOrder ? post.seriesOrder : undefined,
+  }
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }} />
       <PostTitleSync title={post.title} minutes={post.readingTime || 1} />
       <ArticleLayout
         post={post}

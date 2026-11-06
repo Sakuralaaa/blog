@@ -16,8 +16,18 @@ if [[ "${TAG_VERSION}" != v* ]]; then
 fi
 
 echo "使用版本: ${TAG_VERSION}"
-docker build \
-  --build-arg APP_VERSION="${VERSION}" \
-  -t "${IMAGE}:${TAG_VERSION}" \
-  -t "${IMAGE}:latest" \
-  "${ROOT_DIR}"
+# 可选：TAG_SUFFIX（如 -arm64）、CACHE_SCOPE（启用 buildx 的 GitHub Actions 缓存）
+TAG_SUFFIX="${TAG_SUFFIX:-}"
+BUILD_ARGS=(--build-arg APP_VERSION="${VERSION}" -t "${IMAGE}:${TAG_VERSION}${TAG_SUFFIX}")
+if [[ -z "${TAG_SUFFIX}" ]]; then
+  BUILD_ARGS+=(-t "${IMAGE}:latest")
+fi
+
+if [[ -n "${CACHE_SCOPE:-}" ]]; then
+  docker buildx build --load \
+    --cache-from "type=gha,scope=${CACHE_SCOPE}" \
+    --cache-to "type=gha,mode=max,scope=${CACHE_SCOPE}" \
+    "${BUILD_ARGS[@]}" "${ROOT_DIR}"
+else
+  docker build "${BUILD_ARGS[@]}" "${ROOT_DIR}"
+fi

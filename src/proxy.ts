@@ -6,6 +6,18 @@ const cspHeader = buildContentSecurityPolicy({
   allowUnsafeInlineScript: process.env.CSP_ALLOW_UNSAFE_INLINE_SCRIPT !== 'false',
 })
 
+const DEFAULT_HSTS = 'max-age=63072000; includeSubDomains; preload'
+
+/** HSTS_HEADER overrides the header; "off" disables it (e.g. sites on a shared parent domain). */
+export function resolveHstsHeader(value = process.env.HSTS_HEADER): string | null {
+  const raw = (value ?? '').trim()
+  if (!raw) return DEFAULT_HSTS
+  if (/^(off|false|0|none)$/i.test(raw)) return null
+  return raw
+}
+
+const hstsHeader = resolveHstsHeader()
+
 // Authentication is enforced at each server page and route. Avoid loading the
 // authentication/database stack for every public asset and navigation request.
 export function proxy(request: NextRequest) {
@@ -39,6 +51,7 @@ export function proxy(request: NextRequest) {
   }
   const response = NextResponse.next()
   response.headers.set('Content-Security-Policy', cspHeader)
+  if (hstsHeader) response.headers.set('Strict-Transport-Security', hstsHeader)
   // The media handler chooses its cache policy only after checking access.
   const mediaRead = path.startsWith('/api/files/') && ['GET', 'HEAD'].includes(request.method)
   if ((path.startsWith('/api/') && !mediaRead) || path.startsWith('/admin') || path.startsWith('/auth')) {
