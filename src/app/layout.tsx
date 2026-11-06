@@ -24,9 +24,6 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical: '/',
-      types: {
-        'application/rss+xml': [{ url: '/feed.xml', title }],
-      },
     },
     robots: {
       index: true,
@@ -78,6 +75,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           // Applies the visitor's stored style before first paint (see site-styles.ts).
           dangerouslySetInnerHTML={{ __html: buildStyleBootScript() }}
         />
+        {/* Page metadata replaces `alternates`, so the feed link lives here to reach every page. */}
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="/feed.xml" />
       </head>
       <body id="site-page" className="font-sans antialiased">
         <SessionProvider>
