@@ -12,6 +12,8 @@ let directory, prisma, postWriter, migration, user
 before(async () => {
   directory = await mkdtemp(path.join(tmpdir(), 'lagoon-migration-test-'))
   process.env.DATABASE_URL = `file:${directory}/test.db`
+  // Prisma and node:sqlite must not open the same file in one process (POSIX locks are per process).
+  process.env.AI_VECTOR_DATABASE_URL = `file:${directory}/ai-index.sqlite`
   process.env.MEDIA_ROOT = path.join(directory, 'uploads')
   const db = new DatabaseSync(path.join(directory, 'test.db'))
   db.exec('PRAGMA foreign_keys=ON')
@@ -128,7 +130,7 @@ for (const type of ['post-delete', 'rebuild']) {
       update: { value },
     })
     await execFileAsync(process.execPath, ['--import', 'tsx', 'tests/helpers/ai-index-recovery.mjs', type], {
-      env: { ...process.env, DATABASE_URL: `file:${directory}/test.db` }, timeout: 15000,
+      env: { ...process.env, DATABASE_URL: `file:${directory}/test.db`, AI_VECTOR_DATABASE_URL: `file:${directory}/ai-index.sqlite` }, timeout: 15000,
     })
   })
 }
