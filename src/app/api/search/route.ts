@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getClientIp, rateLimit, rateLimitHeaders } from '@/lib/rate-limit'
+import { searchPostIds } from '@/lib/post-search'
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,8 +42,14 @@ export async function GET(request: NextRequest) {
     const contentMatch = { content: { contains: searchTerm } }
     const tagMatch = { postTags: { some: { tag: { name: { contains: searchTerm } } } } }
 
+    // Full-text index first (ranked); plain substring matching for short queries or as fallback.
+    const ftsIds = await searchPostIds(trimmed, 20)
+    const ftsWhere = ftsIds
+      ? { status: 'PUBLISHED' as const, OR: [{ id: { in: ftsIds } }, tagMatch] }
+      : null
+
     const posts = await prisma.post.findMany({
-      where: {
+      where: ftsWhere ?? {
         status: 'PUBLISHED',
         OR: [
           {
@@ -90,6 +97,11 @@ export async function GET(request: NextRequest) {
         publishedAt: 'desc',
       },
     })
+
+    if (ftsIds) {
+      const rank = new Map(ftsIds.map((id, index) => [id, index]))
+      posts.sort((x, y) => (rank.get(x.id) ?? ftsIds.length) - (rank.get(y.id) ?? ftsIds.length))
+    }
 
     // 搜索分类
     const categories = await prisma.category.findMany({

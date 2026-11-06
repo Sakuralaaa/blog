@@ -13,6 +13,7 @@ import { Suspense } from 'react'
 import { toCanonicalPath } from '@/lib/seo'
 import { normalizeSeriesName, SERIES_NAME_MAX } from '@/lib/post-series'
 import { getSeriesSummaries } from '@/lib/series-groups'
+import { searchPostIds } from '@/lib/post-search'
 import { SeriesCard } from '@/components/posts/series-card'
 
 export const revalidate = 60
@@ -90,6 +91,17 @@ const postCardSelect = {
   viewCount: { select: { count: true } },
 } satisfies Prisma.PostSelect
 
+/** One page of search results in relevance order (the index ranks; filters still apply). */
+async function rankedPage(where: Prisma.PostWhereInput, rankedIds: string[], skip: number, take: number) {
+  const matching = new Set(
+    (await prisma.post.findMany({ where, select: { id: true } })).map((post) => post.id),
+  )
+  const pageIds = rankedIds.filter((id) => matching.has(id)).slice(skip, skip + take)
+  const posts = await prisma.post.findMany({ where: { id: { in: pageIds } }, select: postCardSelect })
+  const order = new Map(pageIds.map((id, index) => [id, index]))
+  return posts.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0))
+}
+
 export default async function PostsPage({ searchParams }: PostsPageProps) {
   const params = await searchParams
   const series = readSeries(params.series)
@@ -109,7 +121,11 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     status: 'PUBLISHED',
   }
 
-  if (search) {
+  // Ranked full-text matches when the index can answer; substring matching otherwise.
+  const ftsIds = search ? await searchPostIds(search) : null
+  if (ftsIds) {
+    where.id = { in: ftsIds }
+  } else if (search) {
     where.OR = [
       { title: { contains: search } },
       { excerpt: { contains: search } },
@@ -141,7 +157,7 @@ export default async function PostsPage({ searchParams }: PostsPageProps) {
     prisma.post.count({ where }),
     prisma.post.count({ where: listWhere }),
     prisma.post.count({ where: { status: 'PUBLISHED' } }),
-    prisma.post.findMany({
+    ftsIds ? rankedPage(listWhere, ftsIds, skip, pageSize) : prisma.post.findMany({
       where: listWhere,
       select: postCardSelect,
       orderBy: {
