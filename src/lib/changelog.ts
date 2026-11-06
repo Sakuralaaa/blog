@@ -5,6 +5,9 @@ export type ChangelogItem = {
 }
 
 export const CHANGELOG: ChangelogItem[] = [
+  { version: '1.4.7', date: '2026-11-07', highlights: [
+    '正文里单个 $ 不再被当成行内公式（如「$100/$200」），行内公式请用 $$…$$。',
+  ] },
   { version: '1.4.1', date: '2026-11-06', highlights: [
     '关于页重排：顶部全宽资料卡，下方简介通栏、其余板块两列等高。',
     '身份按「·」拆成标签，不再在词中间折行；正文避免末行孤字。',
