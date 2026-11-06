@@ -9,7 +9,7 @@ export async function GET() {
     const res = NextResponse.json(settings)
     res.headers.set('Cache-Control', 'no-store, max-age=0')
     return res
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
   }
 }

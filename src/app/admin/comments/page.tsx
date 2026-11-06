@@ -60,6 +60,7 @@ export default function CommentsAdminPage() {
 
   useEffect(() => {
     fetchComments()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when these inputs change
   }, [page, statusFilter])
 
   useEffect(() => {

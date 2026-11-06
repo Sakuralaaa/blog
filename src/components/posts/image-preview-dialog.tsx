@@ -2,7 +2,6 @@
 
 import { Spinner } from '@/components/loading/spinner'
 
-/* eslint-disable @next/next/no-img-element -- Reuse authorized media URLs directly; the image optimizer must not proxy protected files. */
 
 import { useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Maximize, Minus, Plus, X } from 'lucide-react'

@@ -20,7 +20,6 @@ const XML_ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&
 
 export function escapeXml(value: string): string {
   // Drop characters that are invalid in XML 1.0 before escaping.
-  // eslint-disable-next-line no-control-regex
   return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '').replace(/[&<>"']/g, (c) => XML_ESCAPES[c])
 }
 

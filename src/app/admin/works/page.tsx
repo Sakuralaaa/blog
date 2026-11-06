@@ -110,6 +110,7 @@ export default function AdminWorksPage() {
 
   useEffect(() => {
     loadProjects()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once on mount
   }, [])
 
   const openCreate = () => {

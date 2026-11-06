@@ -24,7 +24,6 @@ export function PostsFilters({
   initialStatus,
   initialCategoryId,
   onChange,
-  loading,
 }: PostsFiltersProps) {
   const router = useRouter()
   const pathname = usePathname()

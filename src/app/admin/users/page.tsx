@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
-import { Users, Shield, Trash2, Mail, Search, FileText, MessageSquare, Clock } from 'lucide-react'
+import { Users, Trash2, Mail, Search, FileText, MessageSquare, Clock } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { useToast } from '@/hooks/use-toast'
@@ -51,6 +51,7 @@ export default function UsersAdminPage() {
       fetchUsers()
     }, 300) // Debounce search
     return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when these inputs change
   }, [page, searchQuery, roleFilter])
 
   useEffect(() => {

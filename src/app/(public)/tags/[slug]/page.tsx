@@ -1,4 +1,4 @@
-import { pageNumber, pageSize as boundedPageSize } from '@/lib/pagination'
+import { pageNumber } from '@/lib/pagination'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'

@@ -51,6 +51,7 @@ export function TableOfContents({ headings }: { headings: HeadingItem[] }) {
       window.removeEventListener('scroll', update)
       window.removeEventListener('resize', update)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- getActiveId only reads `headings`
   }, [headings])
 
   useEffect(() => {

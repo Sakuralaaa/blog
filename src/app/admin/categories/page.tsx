@@ -14,7 +14,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
 import {
   AlertDialog,
@@ -28,7 +27,6 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Plus, Pencil, Trash2 } from 'lucide-react'
-import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
 
 type CategoryRow = { id: string; name: string; slug: string; description?: string | null; _count: { posts: number } }

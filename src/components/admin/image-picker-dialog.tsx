@@ -54,7 +54,6 @@ export function ImagePickerDialog({
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [totalFiles, setTotalFiles] = useState(0)
   const [files, setFiles] = useState<MediaFile[]>([])
   const [query, setQuery] = useState('')
   const [dragging, setDragging] = useState(false)
@@ -78,7 +77,6 @@ export function ImagePickerDialog({
       if (page > (data.pagination?.totalPages || 1)) { setPage(data.pagination?.totalPages || 1); return }
       setFiles(data.files || [])
       setTotalPages(data.pagination?.totalPages || 1)
-      setTotalFiles(data.pagination?.total || 0)
     } catch (error) {
       if (sequence !== latestRequest.current) return
       console.error('加载图片失败:', error)

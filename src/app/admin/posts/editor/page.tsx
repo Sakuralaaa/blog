@@ -240,7 +240,7 @@ function PostEditorContent() {
           setLoading(false)
         })
     }
-  }, [postId])
+  }, [postId, toast])
 
   useEffect(() => {
     const container = editorLayoutRef.current

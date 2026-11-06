@@ -41,7 +41,7 @@ export function SignInForm({
         router.push('/admin')
         router.refresh()
       }
-    } catch (error) {
+    } catch {
       setError('登录失败,请稍后重试')
     } finally {
       setIsLoading(false)
